@@ -84,7 +84,8 @@ function Main() {
   }
   const validQueue = queue.filter(id => data.tracks.some(t => t.id === id));
   const position = active ? validQueue.indexOf(active) : -1;
-  const visible = (playlist ? playlist.trackIds.map(id => data.tracks.find(t => t.id === id)!).filter(Boolean) : data.tracks).filter(t => t.name.toLowerCase().includes(search.toLowerCase()));
+  const sortedTracks = [...data.tracks].sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant', { numeric: true, sensitivity: 'base' }));
+  const visible = (playlist ? playlist.trackIds.map(id => data.tracks.find(t => t.id === id)!).filter(Boolean) : sortedTracks).filter(t => t.name.toLowerCase().includes(search.toLowerCase()));
   const selected = data.tracks.find(t => t.id === active) ?? null;
   return <SafeAreaView style={s.screen}><StatusBar style="light" />
     <View style={s.header}><Text style={s.label}>BAIYEN MUSIC PLAYER</Text><Text style={s.heading}>{playlist ? playlist.name : '我的音樂'}</Text>
@@ -98,7 +99,7 @@ function Main() {
     </> : <>
       <View style={s.header}>{playlist && <><View style={s.row}><Button title="返回清單" onPress={() => { setPlaylistId(null); setSearch(''); setName(''); }} /><Button title="加入／移除歌曲" disabled={busy} onPress={() => setEditing(true)} /><Button title="依序播放" disabled={!playlist.trackIds.length} onPress={() => choose(data.tracks.find(t => t.id === playlist.trackIds[0])!, playlist.trackIds)} /></View>
         <View style={s.row}><TextInput style={[s.input, { flex: 1 }]} accessibilityLabel="重新命名清單" placeholder="輸入新名稱" placeholderTextColor="#8DA69B" value={name} maxLength={60} onChangeText={setName} /><Button title="改名" disabled={busy || !name.trim()} onPress={() => { changePlaylist(p => ({ ...p, name: name.trim() })); setName(''); }} /><Button title="刪除清單" danger disabled={busy} onPress={() => Alert.alert('刪除播放清單？', '音樂庫中的歌曲仍會保留。', [{ text: '取消', style: 'cancel' }, { text: '刪除', style: 'destructive', onPress: () => void run(async () => { await commit({ ...current.current, playlists: current.current.playlists.filter(p => p.id !== playlistId) }); setPlaylistId(null); setName(''); }) }])} /></View></>}
-        <TextInput accessibilityLabel="搜尋歌曲" style={s.input} placeholder="搜尋歌曲名稱" placeholderTextColor="#8DA69B" value={search} onChangeText={setSearch} />
+        {!playlist && <Text style={s.muted}>依名稱排序 · 由小到大</Text>}<TextInput accessibilityLabel="搜尋歌曲" style={s.input} placeholder="搜尋歌曲名稱" placeholderTextColor="#8DA69B" value={search} onChangeText={setSearch} />
       </View>
       <FlatList data={visible} keyExtractor={t => t.id} contentContainerStyle={s.list} ListEmptyComponent={<Text style={s.muted}>{search ? '找不到符合的歌曲。' : playlist ? '清單還沒有歌曲，點選「加入／移除歌曲」。' : '點選「匯入 MP3」，從 iPhone「檔案」加入音樂。'}</Text>} renderItem={({ item }) => <View style={[s.item, item.id === active && s.active]}>
         <Pressable accessibilityRole="button" accessibilityLabel={`播放 ${item.name}`} onPress={() => choose(item, playlist ? playlist.trackIds : visible.map(t => t.id))}><Text style={s.title}>{item.name}</Text><Text style={s.muted}>{(item.size / 1024 / 1024).toFixed(1)} MB{item.id === active ? ' · 已選取' : ' · 點選播放'}</Text></Pressable>
@@ -107,11 +108,12 @@ function Main() {
     </>}
     </>}
     <Player key={selected?.id ?? 'sample'} track={selected} previous={position > 0 ? () => setActive(validQueue[position - 1]) : undefined} next={position >= 0 && position < validQueue.length - 1 ? () => setActive(validQueue[position + 1]) : undefined} />
-    <Modal visible={editing && !!playlist} animationType="slide" onRequestClose={() => setEditing(false)}><SafeAreaView style={s.screen}><View style={s.header}><Text style={s.heading}>選擇清單歌曲</Text><Text style={s.muted}>點選歌曲即可加入或移除，變更會立即儲存。</Text><Button title="完成" onPress={() => setEditing(false)} />{!!error && <Text style={s.error}>{error}</Text>}</View><FlatList data={data.tracks} keyExtractor={t => t.id} contentContainerStyle={s.list} ListEmptyComponent={<Text style={s.muted}>音樂庫尚無歌曲，請先完成並匯入 MP3。</Text>} renderItem={({ item }) => <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: playlist?.trackIds.includes(item.id), disabled: busy }} disabled={busy} style={s.item} onPress={() => changePlaylist(p => toggleTrack(p, item.id))}><Text style={s.title}>{playlist?.trackIds.includes(item.id) ? '✓ ' : '＋ '}{item.name}</Text></Pressable>} /></SafeAreaView></Modal>
+    <Modal visible={editing && !!playlist} animationType="slide" onRequestClose={() => setEditing(false)}><SafeAreaView style={s.screen}><View style={s.header}><Text style={s.heading}>選擇清單歌曲</Text><Text style={s.muted}>點選歌曲即可加入或移除，變更會立即儲存。</Text><Button title="完成" onPress={() => setEditing(false)} />{!!error && <Text style={s.error}>{error}</Text>}</View><FlatList data={sortedTracks} keyExtractor={t => t.id} contentContainerStyle={s.list} ListEmptyComponent={<Text style={s.muted}>音樂庫尚無歌曲，請先完成並匯入 MP3。</Text>} renderItem={({ item }) => <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: playlist?.trackIds.includes(item.id), disabled: busy }} disabled={busy} style={s.item} onPress={() => changePlaylist(p => toggleTrack(p, item.id))}><Text style={s.title}>{playlist?.trackIds.includes(item.id) ? '✓ ' : '＋ '}{item.name}</Text></Pressable>} /></SafeAreaView></Modal>
   </SafeAreaView>;
 }
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#101A19' }, header: { paddingHorizontal: 18, paddingTop: 8 }, heading: { color: '#F2F5EF', fontSize: 27, fontWeight: '700', marginVertical: 8 }, label: { color: '#8BCAB3', fontSize: 10, letterSpacing: 2 }, title: { color: '#F2F5EF', fontSize: 17, fontWeight: '600' }, muted: { color: '#A4B6AF', fontSize: 12, marginTop: 5 }, row: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' }, button: { paddingVertical: 12, paddingHorizontal: 10, minHeight: 44 }, input: { borderColor: '#40524A', borderWidth: 1, borderRadius: 10, padding: 12, color: '#F2F5EF', marginVertical: 5, minHeight: 44 }, list: { padding: 18, paddingBottom: 12 }, item: { backgroundColor: '#1B2A26', padding: 14, borderRadius: 14, marginBottom: 10 }, active: { borderColor: '#C1E4A5', borderWidth: 1 }, player: { paddingHorizontal: 18, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#40524A', backgroundColor: '#1B2A26' }, progress: { height: 3, backgroundColor: '#40524A', marginTop: 10 }, error: { color: '#FFB4A9', marginVertical: 6 },
 });
+
 
 
