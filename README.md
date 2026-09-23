@@ -70,3 +70,22 @@ MP3 透過 .gitignore 排除，避免把私人音檔加入版本控制。
 TypeScript 型別檢查、資料模型測試與 iOS JavaScript／音檔匯出。
 沙箱無法啟動 Hermes 編譯器，匯出驗證使用 --no-bytecode；真機檔案選取與重啟保存需在 iPhone 驗收。
 
+
+## 播放時喚醒與背景音訊
+- 前景播放時保持螢幕喚醒；暫停、播放結束或切到背景時解除螢幕喚醒。
+- 背景音訊已啟用 iOS audio background mode 與 Android media playback foreground service。
+- 播放時註冊鎖定畫面媒體控制與歌曲名稱；使用 doNotMix 音訊模式。
+- 不使用麥克風或背景錄音權限。
+- 必須重新建置 APK／iOS 原生測試版；Expo Go 不能完整驗收這些原生設定。
+- 真機驗收：前景超過自動鎖定時間仍亮屏；暫停後恢復鎖定；手動鎖屏及切換 App 超過 5 分鐘仍播放；鎖定畫面暫停／續播；背景跨曲播放及回到前景。
+- 使用者強制結束 App 不屬於背景播放支援範圍；來電及其他 App 音訊可能造成系統中斷。
+
+## 瀏覽器版
+在 app 目錄執行 npm run web -- --port 8082，開啟 http://localhost:8082。
+- 支援匯入 MP3、音樂庫名稱排序與搜尋、播放／暫停／重播、播放清單管理。
+- src/storage.web.ts 使用 IndexedDB 保存音檔與資料；手機仍使用原本的檔案儲存方式。
+- 資料屬於目前瀏覽器與網址，切換連接埠／瀏覽器不共用；清除網站資料或無痕模式可能失去資料。
+- 音檔不會上傳伺服器。使用者首次選曲若受自動播放限制，請再按播放。
+- 切換分頁後能否持續播放、鎖屏與螢幕喚醒取決於瀏覽器及作業系統；不保證與原生 App 相同。
+- 發布：npx expo export --platform web，將 dist 作為靜態網站部署到 HTTPS 主機。
+- dist/index.html 必須透過 HTTP(S) 伺服器開啟，不支援直接雙擊 file://。

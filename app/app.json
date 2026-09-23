@@ -26,6 +26,17 @@
       "eas": {
         "projectId": "eff2c601-68d9-4efe-9bb7-daaec1aa25ff"
       }
-    }
+    },
+    "plugins": [
+      [
+        "expo-audio",
+        {
+          "enableBackgroundPlayback": true,
+          "enableBackgroundRecording": false,
+          "recordAudioAndroid": false,
+          "microphonePermission": false
+        }
+      ]
+    ]
   }
 }
