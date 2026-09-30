@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AppState, Text, View } from 'react-native';
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { useKeepAwake } from 'expo-keep-awake';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import SeekBar from '../SeekBar';
 import { trackUri } from '../storage';
 import type { Track } from '../model';
@@ -26,6 +27,7 @@ export default function Player({ track, next, previous }: Props) {
   // One player for the whole session: swapping sources with replace() keeps iOS background playback alive between tracks.
   const player = useAudioPlayer(null, { keepAudioSessionActive: true });
   const status = useAudioPlayerStatus(player);
+  const insets = useSafeAreaInsets();
   const [foreground, setForeground] = useState(AppState.currentState === 'active');
   const [error, setError] = useState('');
   const [ready, setReady] = useState(false);
@@ -90,7 +92,7 @@ export default function Player({ track, next, previous }: Props) {
   const hasDuration = Number.isFinite(status.duration) && status.duration > 0;
   const position = track ? seekPreview ?? status.currentTime : 0;
   return (
-    <View style={s.player}>
+    <View style={[s.player, { paddingBottom: Math.max(insets.bottom, 12) }]}>
       {status.playing && foreground && <PlaybackWakeLock />}
       <Text style={s.label}>正在播放</Text>
       <Text style={s.title} numberOfLines={1}>{track?.name ?? '請從音樂庫選擇歌曲'}</Text>

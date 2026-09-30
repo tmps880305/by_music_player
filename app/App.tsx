@@ -62,8 +62,9 @@ function Main() {
   const selected = data.tracks.find(t => t.id === active) ?? null;
   const emptyText = search ? '找不到符合的歌曲。' : playlist ? '清單還沒有歌曲，點選「加入／移除歌曲」。' : '點選「匯入 MP3」，從裝置選擇音樂檔案。';
 
+  // The bottom inset is applied inside Player so its background reaches the screen edge.
   return (
-    <SafeAreaView style={s.screen}>
+    <SafeAreaView style={s.screen} edges={['top', 'left', 'right']}>
       <StatusBar style="light" />
       <View style={s.header}>
         <Text style={s.label}>BAIYEN MUSIC PLAYER</Text>
