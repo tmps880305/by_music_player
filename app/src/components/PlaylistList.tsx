@@ -7,6 +7,7 @@ import { useLongPressDrag } from '../useLongPressDrag';
 import Button from './Button';
 import IconButton from './IconButton';
 import type { Rect, TransitionSource } from './PlaylistTransition';
+import CoachHint, { loopUpArrow } from './CoachHint';
 
 type Props = {
   playlists: Playlist[];
@@ -57,7 +58,12 @@ export default function PlaylistList({ playlists, busy, name, onNameChange, onCr
         <Button title="建立清單" filled disabled={busy || !name.trim()} onPress={onCreate} />
       </View>
       <ReorderableList data={playlists} keyExtractor={p => p.id} contentContainerStyle={s.list}
-        ListEmptyComponent={<View><Text style={s.muted}>建立第一個播放清單，把喜歡的歌曲放在一起。</Text></View>}
+        // With no playlists, an onboarding hint points up at 建立清單 (same bobbing arrow as the library's + hint).
+        ListEmptyComponent={<View style={s.coachArea}>
+          <View style={s.coachLayer}>
+            <CoachHint text="輸入名稱並建立播放清單" arrow={loopUpArrow} arrowStyle={s.coachArrowToCreate} textStyle={s.coachTextToCreate} />
+          </View>
+        </View>}
         onReorder={({ from, to }) => onReorder(from, to)}
         renderItem={({ item }): ReactElement => (
           <PlaylistCard playlist={item} busy={busy} onOpen={from => onOpen(item.id, from)} onRename={() => onRename(item)} onDelete={() => onDelete(item)} />

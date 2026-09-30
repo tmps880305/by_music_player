@@ -58,6 +58,10 @@ export const s = StyleSheet.create({
   coachText: { position: 'absolute', color: colors.accent, fontSize: 14, fontWeight: '600' },
   coachArrowToImport: { position: 'absolute', top: 0, right: 0 },
   coachTextToImport: { top: 70, right: 0 },
+  // - Playlists tab with no playlists: loopUpArrow centred horizontally. Its tip is at x 90.5 in the 110-wide box, so
+  //   the box starts 90.5pt left of centre; the text is centred below it.
+  coachArrowToCreate: { position: 'absolute', top: 0, left: '50%', marginLeft: -90.5 },
+  coachTextToCreate: { top: 78, left: 0, right: 0, textAlign: 'center' },
   coachArrowToAction: { position: 'absolute', top: 56, left: 12 },
   coachTextToAction: { top: 150, left: 49 },
   // Playlist opening transition (see PlaylistTransition): a layer over the screen that ignores touches.
