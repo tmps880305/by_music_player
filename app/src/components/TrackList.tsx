@@ -6,6 +6,7 @@ import { useLongPressDrag } from '../useLongPressDrag';
 import { colors, s } from '../theme';
 import Button from './Button';
 import CoachHint, { loopUpArrow, riseLeftArrow } from './CoachHint';
+import EnterAnimation, { useEntranceDelays } from './EnterAnimation';
 import IconButton from './IconButton';
 
 type Props = {
@@ -56,6 +57,8 @@ export default function TrackList({ tracks, playlist, activeId, busy, emptyText,
       <CoachHint text={emptyAction.coach.toAction} arrow={riseLeftArrow} arrowStyle={s.coachArrowToAction} textStyle={s.coachTextToAction} />
     </View>}
   </View>;
+  // Cards added while the list is showing (imports, songs added to a playlist) drop in one by one.
+  const entranceDelay = useEntranceDelays(tracks.map(t => t.id));
   const card = (track: Track): Omit<CardProps, 'onLongPress'> => ({
     track, active: track.id === activeId, busy, inPlaylist: !!playlist,
     onPlay: () => onPlay(track), onTrash: () => playlist ? onRemove(track) : onDelete(track),
@@ -64,10 +67,10 @@ export default function TrackList({ tracks, playlist, activeId, busy, emptyText,
   if (playlist) return (
     <ReorderableList data={tracks} keyExtractor={t => t.id} contentContainerStyle={s.list} ListEmptyComponent={empty}
       onReorder={({ from, to }) => onReorder(from, to)}
-      renderItem={({ item }): ReactElement => <DraggableTrackCard {...card(item)} dragEnabled={!busy} />} />
+      renderItem={({ item }): ReactElement => <EnterAnimation delay={entranceDelay(item.id)}><DraggableTrackCard {...card(item)} dragEnabled={!busy} /></EnterAnimation>} />
   );
   return (
     <FlatList data={tracks} keyExtractor={t => t.id} contentContainerStyle={s.list} ListEmptyComponent={empty}
-      renderItem={({ item }) => <TrackCard {...card(item)} />} />
+      renderItem={({ item }) => <EnterAnimation delay={entranceDelay(item.id)}><TrackCard {...card(item)} /></EnterAnimation>} />
   );
 }
