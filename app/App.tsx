@@ -147,11 +147,16 @@ function Main() {
         <View style={s.header}>
           {playlist ? <>
             <View style={s.actionRow}>
-              <Button title={editMode ? '完成' : '編輯'} filled compact onPress={() => { setEditMode(!editMode); setName(''); }} />
+              <View style={[s.leadingIcon, s.iconRow]}>
+                {/* Same as 加入／移除歌曲; sized like the play button. */}
+                <IconButton icon="add-circle" label="加入／移除歌曲" size={47} onPress={() => setPicking(true)} />
+                {/* Temporary home for edit mode (rename) until its placement is decided. */}
+                <Button title={editMode ? '完成' : '編輯'} filled compact onPress={() => { setEditMode(!editMode); setName(''); }} />
+              </View>
               {!editMode && <View style={[s.trailingIcon, s.iconRow]}>
                 {/* Restarts the whole playlist from its first song, whatever is currently playing. */}
                 <IconButton icon="refresh" label="從第一首重新播放" size={28} disabled={!listed.length} onPress={() => choose(listed[0], playlist.trackIds, playlist.id, true)} />
-                {/* The circle glyph is 0.81em tall, so size 47 matches the 38pt edit button. */}
+                {/* The circle glyph is 0.81em tall, so size 47 draws a 38pt circle. */}
                 <IconButton icon={playlistPlaying ? 'pause-circle' : 'play-circle'} label={playlistPlaying ? '暫停播放清單' : '播放清單'} size={47} disabled={!listed.length} onPress={playPlaylist} />
               </View>}
             </View>

@@ -21,7 +21,7 @@ export default function PlaylistEditor({ visible, tracks, selectedIds, busy, err
         <View style={s.header}>
           <Text style={s.heading}>選擇清單歌曲</Text>
           <Text style={s.muted}>點選歌曲即可加入或移除，變更會立即儲存。</Text>
-          <Button title="完成" onPress={onClose} />
+          <View style={s.primaryAction}><Button title="完成" filled compact onPress={onClose} /></View>
           {!!error && <Text style={s.error}>{error}</Text>}
         </View>
         <FlatList data={tracks} keyExtractor={t => t.id} contentContainerStyle={s.list}
