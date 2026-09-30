@@ -112,7 +112,7 @@ function Main() {
   const playlistPlaying = playlistOwnsPlayback && playing;
   const emptyText = search ? '找不到符合的歌曲。'
     : playlist ? '清單還沒有歌曲，點選 + 加入歌曲。'
-    : '點選「匯入 MP3」從裝置選擇音樂檔案，或先加入範例歌曲試聽。';
+    : '點選搜尋框旁的 + 從裝置匯入 MP3，或先加入範例歌曲試聽。';
   const emptyAction = !playlist && !search && !data.tracks.length ? { title: '加入範例歌曲', onPress: () => void library.addSamples() } : undefined;
 
   // The bottom inset is applied inside Player so its background reaches the screen edge.
@@ -130,7 +130,6 @@ function Main() {
           <View style={s.row}>
             <Button title={`音樂庫 ${data.tracks.length}`} onPress={() => showTab('library')} />
             <Button title={`播放清單 ${data.playlists.length}`} onPress={() => showTab('playlists')} />
-            <Button title={busy ? '處理中…' : '匯入 MP3'} disabled={busy || !loaded} onPress={() => void library.importFiles()} />
           </View>
         </>}
         {!!error && <Text accessibilityRole="alert" style={s.error}>{error}</Text>}
@@ -163,7 +162,7 @@ function Main() {
             <Text style={s.muted}>依名稱排序 · 由小到大</Text>
             <View style={s.inputRow}>
               <TextInput accessibilityLabel="搜尋歌曲" style={[s.input, { flex: 1 }]} placeholder="搜尋歌曲名稱" placeholderTextColor={colors.placeholder} value={search} onChangeText={setSearch} />
-              {/* Same as 匯入 MP3; styled like the playlist page's + button. */}
+              {/* Imports MP3s via the file picker; styled like the playlist page's + button. */}
               <View style={s.trailingIcon}>
                 <IconButton icon="add-circle" label="匯入 MP3" size={47} disabled={busy || !loaded} onPress={() => void library.importFiles()} />
               </View>

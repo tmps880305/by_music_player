@@ -25,7 +25,7 @@ export default function PlaylistEditor({ visible, tracks, selectedIds, busy, err
           {!!error && <Text style={s.error}>{error}</Text>}
         </View>
         <FlatList data={tracks} keyExtractor={t => t.id} contentContainerStyle={s.list}
-          ListEmptyComponent={<Text style={s.muted}>音樂庫尚無歌曲，請先完成並匯入 MP3。</Text>}
+          ListEmptyComponent={<Text style={s.muted}>音樂庫尚無歌曲，請先到音樂庫點選 + 匯入 MP3。</Text>}
           renderItem={({ item }) => {
             const checked = selectedIds.includes(item.id);
             return (
