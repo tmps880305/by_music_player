@@ -8,18 +8,16 @@ type Props = {
   busy: boolean;
   name: string;
   onNameChange: (name: string) => void;
-  onBack: () => void;
   onEdit: () => void;
   onPlayAll: () => void;
   onRename: () => void;
   onDelete: () => void;
 };
 
-export default function PlaylistToolbar({ playlist, busy, name, onNameChange, onBack, onEdit, onPlayAll, onRename, onDelete }: Props) {
+export default function PlaylistToolbar({ playlist, busy, name, onNameChange, onEdit, onPlayAll, onRename, onDelete }: Props) {
   return (
     <>
       <View style={s.row}>
-        <Button title="返回清單" onPress={onBack} />
         <Button title="加入／移除歌曲" disabled={busy} onPress={onEdit} />
         <Button title="依序播放" disabled={!playlist.trackIds.length} onPress={onPlayAll} />
       </View>

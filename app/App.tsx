@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ActivityIndicator, Text, TextInput, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, BackHandler, Text, TextInput, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import DeviceFrame from './src/DeviceFrame';
@@ -8,6 +8,7 @@ import { moveTrack, toggleTrack, type Track } from './src/model';
 import { colors, s } from './src/theme';
 import { useLibrary } from './src/useLibrary';
 import Button from './src/components/Button';
+import IconButton from './src/components/IconButton';
 import Player from './src/components/Player';
 import PlaylistEditor from './src/components/PlaylistEditor';
 import PlaylistList from './src/components/PlaylistList';
@@ -33,6 +34,12 @@ function Main() {
   const playlist = data.playlists.find(p => p.id === playlistId);
 
   function openPlaylist(id: string | null) { setPlaylistId(id); setSearch(''); setName(''); }
+  // Android back button/gesture: leave the open playlist instead of exiting the app.
+  useEffect(() => {
+    if (!playlistId) return;
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => { openPlaylist(null); return true; });
+    return () => subscription.remove();
+  }, [playlistId]);
   function showTab(next: typeof tab) { setTab(next); openPlaylist(null); }
   function choose(track: Track, ids: string[]) { setQueue(ids); setActive(track.id); }
   function deleteSong(track: Track) {
@@ -73,12 +80,19 @@ function Main() {
       <StatusBar style={statusBarStyle} />
       <View style={s.header}>
         <Text style={s.label}>BAIYEN MUSIC PLAYER</Text>
-        <Text style={s.heading}>{playlist ? playlist.name : tab === 'playlists' ? '播放清單' : '音樂庫'}</Text>
-        <View style={s.row}>
-          <Button title={`音樂庫 ${data.tracks.length}`} onPress={() => showTab('library')} />
-          <Button title={`播放清單 ${data.playlists.length}`} onPress={() => showTab('playlists')} />
-          <Button title={busy ? '處理中…' : '匯入 MP3'} disabled={busy || !loaded} onPress={() => void library.importFiles()} />
-        </View>
+        {playlist ? (
+          <View style={s.titleRow}>
+            <View style={s.backIcon}><IconButton icon="chevron-back" label="返回播放清單" onPress={() => openPlaylist(null)} /></View>
+            <Text style={[s.heading, { flex: 1 }]} numberOfLines={1}>{playlist.name}</Text>
+          </View>
+        ) : <>
+          <Text style={s.heading}>{tab === 'playlists' ? '播放清單' : '音樂庫'}</Text>
+          <View style={s.row}>
+            <Button title={`音樂庫 ${data.tracks.length}`} onPress={() => showTab('library')} />
+            <Button title={`播放清單 ${data.playlists.length}`} onPress={() => showTab('playlists')} />
+            <Button title={busy ? '處理中…' : '匯入 MP3'} disabled={busy || !loaded} onPress={() => void library.importFiles()} />
+          </View>
+        </>}
         {!!error && <Text accessibilityRole="alert" style={s.error}>{error}</Text>}
         {!!notice && <Text style={s.muted}>{notice}</Text>}
       </View>
@@ -93,7 +107,6 @@ function Main() {
         <View style={s.header}>
           {playlist
             ? <PlaylistToolbar playlist={playlist} busy={busy} name={name} onNameChange={setName}
-                onBack={() => openPlaylist(null)}
                 onEdit={() => setEditing(true)}
                 onPlayAll={() => choose(data.tracks.find(t => t.id === playlist.trackIds[0])!, playlist.trackIds)}
                 onRename={() => { changePlaylist(p => ({ ...p, name: name.trim() })); setName(''); }}
