@@ -19,6 +19,8 @@ import EnterAnimation from './src/components/EnterAnimation';
 import PageFlip from './src/components/PageFlip';
 import PlaylistGhost, { type PlaylistSnapshot } from './src/components/PlaylistGhost';
 import RenameDialog from './src/components/RenameDialog';
+import SlidingHeading from './src/components/SlidingHeading';
+import TabSlide from './src/components/TabSlide';
 import TrackList from './src/components/TrackList';
 
 const statusBarStyle = 'light';
@@ -156,7 +158,7 @@ function Main() {
             </Text>
           </View>
         ) : <>
-          <Text style={s.heading}>{tab === 'playlists' ? '播放清單' : '音樂庫'}</Text>
+          <SlidingHeading text={tab === 'playlists' ? '播放清單' : '音樂庫'} direction={tab === 'playlists' ? 1 : -1} />
           <View style={s.row}>
             <Button title={`音樂庫 · ${data.tracks.length}`} label={`音樂庫，${data.tracks.length} 首歌`} selected={tab === 'library'} onPress={() => showTab('library')} />
             <Button title={`播放清單 · ${data.playlists.length}`} label={`播放清單，${data.playlists.length} 個清單`} selected={tab === 'playlists'} onPress={() => showTab('playlists')} />
@@ -167,6 +169,8 @@ function Main() {
         {notice && <FadingNotice key={notice.id} text={notice.text} holdMs={notice.warning ? 8000 : 3000} />}
       </View>
 
+      {/* Switching between the library and playlists tabs slides the pages sideways, in step with the heading. */}
+      <TabSlide pageKey={!loaded ? 'loading' : playlist ? 'playlist' : tab} direction={tab === 'playlists' ? 1 : -1} animateBetween={['library', 'playlists']}>
       {!loaded ? (
         <View style={s.header}>
           {error ? <Button title="重新載入" onPress={() => void library.load()} /> : <ActivityIndicator color={colors.accent} />}
@@ -209,6 +213,7 @@ function Main() {
           onRemove={removeFromPlaylist}
           onDelete={deleteSong} animateOnMount={revealed} />
       </>}
+      </TabSlide>
       {leaving && <PageFlip onDone={() => setLeaving(null)}><PlaylistGhost {...leaving} /></PageFlip>}
       </View>
 

@@ -21,6 +21,14 @@ export const s = StyleSheet.create({
   backIcon: { marginLeft: -14, marginRight: -4, transform: [{ translateY: 1 }] },
   // includeFontPadding (Android only) adds space above the glyphs and pushes the title below icons beside it.
   heading: { color: colors.text, fontSize: 27, fontWeight: '700', marginVertical: 8, includeFontPadding: false },
+  // Heading that slides between tab names (see SlidingHeading); the margin moves from the text to the clipping box.
+  slidingHeading: { marginVertical: 8, overflow: 'hidden' },
+  slidingHeadingText: { marginVertical: 0 },
+  slidingHeadingOld: { position: 'absolute', top: 0, left: 0 },
+  // Sideways page slide between tabs (see TabSlide).
+  tabSlide: { flex: 1, overflow: 'hidden' },
+  tabSlidePage: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+  tabSlideLeaving: { pointerEvents: 'none' },
   label: { color: colors.label, fontSize: 10, letterSpacing: 2 },
   title: { color: colors.text, fontSize: 17, fontWeight: '600' },
   muted: { color: colors.muted, fontSize: 12, marginTop: 5 },
