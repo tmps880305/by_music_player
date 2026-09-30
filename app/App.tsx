@@ -80,6 +80,12 @@ function Main() {
       { text: '刪除', style: 'destructive', onPress: () => void library.deletePlaylist(id) },
     ]);
   }
+  function removeFromPlaylist(track: Track) {
+    Alert.alert('從清單移除？', `「${track.name}」會從這個清單移除，音樂庫中的歌曲仍會保留。`, [
+      { text: '取消', style: 'cancel' },
+      { text: '移除', style: 'destructive', onPress: () => changePlaylist(p => ({ ...p, trackIds: p.trackIds.filter(id => id !== track.id) })) },
+    ]);
+  }
   function changePlaylist(transform: Parameters<typeof library.updatePlaylist>[1]) {
     if (playlistId) void library.updatePlaylist(playlistId, transform);
   }
@@ -146,7 +152,7 @@ function Main() {
         <TrackList tracks={visible} playlist={playlist} editing={editMode} activeId={active} busy={busy} emptyText={emptyText} emptyAction={emptyAction}
           onPlay={track => choose(track, playlist ? playlist.trackIds : visible.map(t => t.id), playlist?.id ?? null)}
           onMove={(track, direction) => changePlaylist(p => moveTrack(p, p.trackIds.indexOf(track.id), direction))}
-          onRemove={track => changePlaylist(p => ({ ...p, trackIds: p.trackIds.filter(id => id !== track.id) }))}
+          onRemove={removeFromPlaylist}
           onDelete={deleteSong} />
       </>}
 

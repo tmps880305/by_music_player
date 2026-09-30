@@ -40,6 +40,9 @@ export const s = StyleSheet.create({
   item: { backgroundColor: colors.surface, padding: 14, borderRadius: 14, marginBottom: 10 },
   // Card with tappable content on the left and a trailing icon; the smaller right padding lines the icon's glyph up with the card's 14pt padding.
   cardRow: { flexDirection: 'row', alignItems: 'center', paddingRight: 4 },
+  // Same as cardRow, split for cards that stack more content under the main row.
+  cardEnd: { paddingRight: 4 },
+  cardMain: { flexDirection: 'row', alignItems: 'center' },
   active: { borderColor: colors.accent, borderWidth: 1 },
   player: { paddingHorizontal: 18, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.surface },
   error: { color: colors.danger, marginVertical: 6 },
