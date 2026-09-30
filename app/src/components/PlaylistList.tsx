@@ -29,7 +29,7 @@ function PlaylistCard({ playlist, busy, onOpen, onRename, onDelete }: CardProps)
       <Pressable style={{ flex: 1 }} accessibilityRole="button" accessibilityLabel={`開啟 ${playlist.name}`} accessibilityHint="長按後拖曳可調整順序"
         onPress={onOpen} onLongPress={drag.onLongPress}>
         <Text style={s.title}>{playlist.name}</Text>
-        <Text style={s.muted}>{playlist.trackIds.length} 首 · 點選開啟</Text>
+        <Text style={s.muted}>{playlist.trackIds.length} 首</Text>
       </Pressable>
       <IconButton icon="pencil-outline" label={`重新命名 ${playlist.name}`} size={22} color={colors.muted} disabled={busy} onPress={onRename} />
       <IconButton icon="trash-outline" label={`刪除 ${playlist.name}`} size={22} color={colors.muted} disabled={busy} onPress={onDelete} />
