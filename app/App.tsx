@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, BackHandler, Text, TextInput, View } from 'react-native';
+import { AccessibilityInfo, ActivityIndicator, BackHandler, Text, TextInput, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -14,6 +14,8 @@ import IconButton from './src/components/IconButton';
 import Player, { type PlayerHandle } from './src/components/Player';
 import PlaylistEditor from './src/components/PlaylistEditor';
 import PlaylistList from './src/components/PlaylistList';
+import PlaylistTransition, { type Rect, type TransitionSource } from './src/components/PlaylistTransition';
+import EnterAnimation from './src/components/EnterAnimation';
 import RenameDialog from './src/components/RenameDialog';
 import TrackList from './src/components/TrackList';
 
@@ -44,11 +46,24 @@ function Main() {
   const [playing, setPlaying] = useState(false);
   const player = useRef<PlayerHandle>(null);
   const playlist = data.playlists.find(p => p.id === playlistId);
+  // Opening a playlist from its card animates the card title into the page heading (`transition`, aimed at
+  // `headingRect`); when it lands, `revealed` lets the page's controls and songs animate in one by one.
+  const [transition, setTransition] = useState<{ name: string; from: TransitionSource } | null>(null);
+  const [headingRect, setHeadingRect] = useState<Rect | null>(null);
+  const [revealed, setRevealed] = useState(false);
+  const heading = useRef<Text>(null);
+  const reduceMotion = useRef(false);
+  useEffect(() => { AccessibilityInfo.isReduceMotionEnabled().then(v => { reduceMotion.current = v; }).catch(() => {}); }, []);
 
   function openPlaylist(id: string | null) {
     // Leaving a playlist whose song is paused resets playback, so the next visit starts with nothing selected.
     if (playlistId && queueSource === playlistId && !playing) { setActive(null); setQueue([]); setQueueSource(null); }
-    setPlaylistId(id); setSearch(''); setName(''); setResumePlaylist(null);
+    setPlaylistId(id); setSearch(''); setName(''); setResumePlaylist(null); setRevealed(false); setTransition(null);
+  }
+  function openPlaylistFromCard(id: string, from?: TransitionSource) {
+    const target = data.playlists.find(p => p.id === id);
+    openPlaylist(id);
+    if (from && target && !reduceMotion.current) { setHeadingRect(null); setTransition({ name: target.name, from }); }
   }
   // Android back button/gesture: leave the open playlist instead of exiting the app. The ref keeps the handler
   // calling the latest openPlaylist, which reads current playback state.
@@ -124,7 +139,10 @@ function Main() {
         {playlist ? (
           <View style={s.titleRow}>
             <View style={s.backIcon}><IconButton icon="chevron-back" label="返回播放清單" size={30} onPress={() => openPlaylist(null)} /></View>
-            <Text style={[s.heading, { flex: 1 }]} numberOfLines={1}>{playlist.name}</Text>
+            <Text ref={heading} style={[s.heading, { flex: 1 }, transition && { opacity: 0 }]} numberOfLines={1}
+              onLayout={() => { if (transition) heading.current?.measureInWindow((x, y, width, height) => setHeadingRect({ x, y, width, height })); }}>
+              {playlist.name}
+            </Text>
           </View>
         ) : <>
           <Text style={s.heading}>{tab === 'playlists' ? '播放清單' : '音樂庫'}</Text>
@@ -143,11 +161,14 @@ function Main() {
           {error ? <Button title="重新載入" onPress={() => void library.load()} /> : <ActivityIndicator color={colors.accent} />}
         </View>
       ) : tab === 'playlists' && !playlist ? (
-        <PlaylistList playlists={data.playlists} busy={busy} name={name} onNameChange={setName} onCreate={() => void createPlaylist()} onOpen={openPlaylist} onRename={p => setRenamingId(p.id)} onDelete={p => deletePlaylist(p.id)}
+        <PlaylistList playlists={data.playlists} busy={busy} name={name} onNameChange={setName} onCreate={() => void createPlaylist()} onOpen={openPlaylistFromCard} onRename={p => setRenamingId(p.id)} onDelete={p => deletePlaylist(p.id)}
           onReorder={(from, to) => void library.movePlaylist(from, to)} />
+      ) : playlist && transition ? (
+        // While the title flies in, the page body stays empty; it animates in once the title lands.
+        <View style={{ flex: 1 }} />
       ) : <>
         <View style={s.header}>
-          {playlist ? <>
+          {playlist ? <EnterAnimation delay={revealed ? 0 : undefined}>
             <View style={s.actionRow}>
               <View style={[s.leadingIcon, s.iconRow]}>
                 {/* Opens the add/remove songs sheet; sized like the play button. */}
@@ -160,7 +181,7 @@ function Main() {
                 <IconButton icon={playlistPlaying ? 'pause-circle' : 'play-circle'} label={playlistPlaying ? '暫停播放清單' : '播放清單'} size={47} disabled={!listed.length} onPress={playPlaylist} />
               </View>
             </View>
-          </> : <>
+          </EnterAnimation> : <>
             <Text style={[s.muted, { marginBottom: 6 }]}>依名稱排序 · 由小到大</Text>
             <View style={s.inputRow}>
               <TextInput accessibilityLabel="搜尋歌曲" style={[s.input, { flex: 1 }]} placeholder="搜尋歌曲名稱" placeholderTextColor={colors.placeholder} value={search} onChangeText={setSearch} />
@@ -175,7 +196,7 @@ function Main() {
           onPlay={track => choose(track, playlist ? playlist.trackIds : visible.map(t => t.id), playlist?.id ?? null)}
           onReorder={(from, to) => { if (playlist) void library.reorderPlaylist(playlist.id, from, to); }}
           onRemove={removeFromPlaylist}
-          onDelete={deleteSong} />
+          onDelete={deleteSong} animateOnMount={revealed} />
       </>}
 
       <Player ref={player} track={selected} restartToken={restartToken} onPlayingChange={setPlaying}
@@ -185,6 +206,8 @@ function Main() {
         onToggle={track => changePlaylist(p => toggleTrack(p, track.id))} onClose={() => setPicking(false)} />
       <RenameDialog playlist={data.playlists.find(p => p.id === renamingId) ?? null} busy={busy} error={error} onCancel={() => setRenamingId(null)}
         onSave={newName => { if (renamingId) void library.updatePlaylist(renamingId, p => ({ ...p, name: newName })).then(ok => { if (ok) setRenamingId(null); }); }} />
+      {transition && <PlaylistTransition name={transition.name} from={transition.from} target={headingRect}
+        onDone={() => { setTransition(null); setRevealed(true); }} />}
     </SafeAreaView>
   );
 }

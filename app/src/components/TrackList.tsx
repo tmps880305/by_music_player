@@ -23,6 +23,8 @@ type Props = {
   onReorder: (from: number, to: number) => void;
   onRemove: (track: Track) => void;
   onDelete: (track: Track) => void;
+  // Stagger in the cards present on mount too (after the playlist opening transition).
+  animateOnMount?: boolean;
 };
 
 type CardProps = { track: Track; active: boolean; busy: boolean; inPlaylist: boolean; onPlay: () => void; onTrash: () => void; onLongPress?: () => void };
@@ -46,7 +48,7 @@ function DraggableTrackCard(props: Omit<CardProps, 'onLongPress'> & { dragEnable
   return <View ref={drag.ref}><TrackCard {...props} onLongPress={drag.onLongPress} /></View>;
 }
 
-export default function TrackList({ tracks, playlist, activeId, busy, emptyText, emptyAction, onPlay, onReorder, onRemove, onDelete }: Props) {
+export default function TrackList({ tracks, playlist, activeId, busy, emptyText, emptyAction, onPlay, onReorder, onRemove, onDelete, animateOnMount = false }: Props) {
   // A View, not a fragment: ReorderableList passes onLayout to the empty component.
   // With coach hints, the empty view reserves room for them below the button.
   const empty = <View style={emptyAction?.coach ? s.coachArea : undefined}>
@@ -58,7 +60,7 @@ export default function TrackList({ tracks, playlist, activeId, busy, emptyText,
     </View>}
   </View>;
   // Cards added while the list is showing (imports, songs added to a playlist) drop in one by one.
-  const entranceDelay = useEntranceDelays(tracks.map(t => t.id));
+  const entranceDelay = useEntranceDelays(tracks.map(t => t.id), animateOnMount);
   const card = (track: Track): Omit<CardProps, 'onLongPress'> => ({
     track, active: track.id === activeId, busy, inPlaylist: !!playlist,
     onPlay: () => onPlay(track), onTrash: () => playlist ? onRemove(track) : onDelete(track),

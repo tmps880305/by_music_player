@@ -52,6 +52,10 @@ export const s = StyleSheet.create({
   coachTextToImport: { top: 70, right: 0 },
   coachArrowToAction: { position: 'absolute', top: 56, left: 12 },
   coachTextToAction: { top: 150, left: 49 },
+  // Playlist opening transition (see PlaylistTransition): a layer over the screen that ignores touches.
+  transitionLayer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none' },
+  transitionCard: { position: 'absolute', backgroundColor: colors.surface, borderRadius: 14 },
+  transitionTitle: { position: 'absolute' },
   dialogBackdrop: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.6)', justifyContent: 'center', padding: 24 },
   dialog: { backgroundColor: colors.surface, borderRadius: 16, padding: 18, gap: 8 },
   dialogActions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 8, marginTop: 4 },
