@@ -33,6 +33,8 @@ export const s = StyleSheet.create({
   input: { borderColor: colors.border, borderWidth: 1, borderRadius: 10, padding: 12, color: colors.text, marginVertical: 5, minHeight: 44 },
   list: { padding: 18, paddingBottom: 12 },
   item: { backgroundColor: colors.surface, padding: 14, borderRadius: 14, marginBottom: 10 },
+  // Card with tappable content on the left and a trailing icon; the smaller right padding lines the icon's glyph up with the card's 14pt padding.
+  cardRow: { flexDirection: 'row', alignItems: 'center', paddingRight: 4 },
   active: { borderColor: colors.accent, borderWidth: 1 },
   player: { paddingHorizontal: 18, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.surface },
   error: { color: colors.danger, marginVertical: 6 },

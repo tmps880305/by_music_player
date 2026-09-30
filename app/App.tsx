@@ -59,7 +59,7 @@ function Main() {
   function deletePlaylist(id: string) {
     Alert.alert('刪除播放清單？', '音樂庫中的歌曲仍會保留。', [
       { text: '取消', style: 'cancel' },
-      { text: '刪除', style: 'destructive', onPress: () => void library.deletePlaylist(id).then(ok => { if (ok) { setPlaylistId(null); setName(''); } }) },
+      { text: '刪除', style: 'destructive', onPress: () => void library.deletePlaylist(id) },
     ]);
   }
   function changePlaylist(transform: Parameters<typeof library.updatePlaylist>[1]) {
@@ -102,15 +102,14 @@ function Main() {
           {error ? <Button title="重新載入" onPress={() => void library.load()} /> : <ActivityIndicator color={colors.accent} />}
         </View>
       ) : tab === 'playlists' && !playlist ? (
-        <PlaylistList playlists={data.playlists} busy={busy} name={name} onNameChange={setName} onCreate={() => void createPlaylist()} onOpen={openPlaylist} />
+        <PlaylistList playlists={data.playlists} busy={busy} name={name} onNameChange={setName} onCreate={() => void createPlaylist()} onOpen={openPlaylist} onDelete={p => deletePlaylist(p.id)} />
       ) : <>
         <View style={s.header}>
           {playlist
             ? <PlaylistToolbar playlist={playlist} busy={busy} name={name} onNameChange={setName}
                 onEdit={() => setEditing(true)}
                 onPlayAll={() => choose(data.tracks.find(t => t.id === playlist.trackIds[0])!, playlist.trackIds)}
-                onRename={() => { changePlaylist(p => ({ ...p, name: name.trim() })); setName(''); }}
-                onDelete={() => deletePlaylist(playlist.id)} />
+                onRename={() => { changePlaylist(p => ({ ...p, name: name.trim() })); setName(''); }} />
             : <Text style={s.muted}>依名稱排序 · 由小到大</Text>}
           <TextInput accessibilityLabel="搜尋歌曲" style={s.input} placeholder="搜尋歌曲名稱" placeholderTextColor={colors.placeholder} value={search} onChangeText={setSearch} />
         </View>
