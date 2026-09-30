@@ -29,7 +29,7 @@ type Props = {
 
 type CardProps = { track: Track; active: boolean; busy: boolean; inPlaylist: boolean; onPlay: () => void; onTrash: () => void; onLongPress?: () => void };
 
-function TrackCard({ track, active, busy, inPlaylist, onPlay, onTrash, onLongPress }: CardProps) {
+export function TrackCard({ track, active, busy, inPlaylist, onPlay, onTrash, onLongPress }: CardProps) {
   return (
     <View style={[s.item, s.cardRow, active && s.active]}>
       <Pressable style={{ flex: 1 }} accessibilityRole="button" accessibilityLabel={`播放 ${track.name}`}

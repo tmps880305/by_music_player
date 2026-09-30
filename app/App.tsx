@@ -16,6 +16,8 @@ import PlaylistEditor from './src/components/PlaylistEditor';
 import PlaylistList from './src/components/PlaylistList';
 import PlaylistTransition, { type Rect, type TransitionSource } from './src/components/PlaylistTransition';
 import EnterAnimation from './src/components/EnterAnimation';
+import PageFlip from './src/components/PageFlip';
+import PlaylistGhost, { type PlaylistSnapshot } from './src/components/PlaylistGhost';
 import RenameDialog from './src/components/RenameDialog';
 import TrackList from './src/components/TrackList';
 
@@ -51,6 +53,8 @@ function Main() {
   const [transition, setTransition] = useState<{ name: string; from: TransitionSource } | null>(null);
   const [headingRect, setHeadingRect] = useState<Rect | null>(null);
   const [revealed, setRevealed] = useState(false);
+  // Going back from a playlist turns a still copy of its page away over the overview (see PageFlip).
+  const [leaving, setLeaving] = useState<PlaylistSnapshot | null>(null);
   const heading = useRef<Text>(null);
   const reduceMotion = useRef(false);
   useEffect(() => { AccessibilityInfo.isReduceMotionEnabled().then(v => { reduceMotion.current = v; }).catch(() => {}); }, []);
@@ -60,18 +64,23 @@ function Main() {
     if (playlistId && queueSource === playlistId && !playing) { setActive(null); setQueue([]); setQueueSource(null); }
     setPlaylistId(id); setSearch(''); setName(''); setResumePlaylist(null); setRevealed(false); setTransition(null);
   }
+  function leavePlaylist() {
+    if (playlist && !reduceMotion.current) setLeaving({ name: playlist.name, tracks: listed, activeId: active, playing: playlistPlaying });
+    openPlaylist(null);
+  }
   function openPlaylistFromCard(id: string, from?: TransitionSource) {
     const target = data.playlists.find(p => p.id === id);
+    setLeaving(null);
     openPlaylist(id);
     if (from && target && !reduceMotion.current) { setHeadingRect(null); setTransition({ name: target.name, from }); }
   }
   // Android back button/gesture: leave the open playlist instead of exiting the app. The ref keeps the handler
-  // calling the latest openPlaylist, which reads current playback state.
-  const openPlaylistRef = useRef(openPlaylist);
-  openPlaylistRef.current = openPlaylist;
+  // calling the latest leavePlaylist, which reads current playback state.
+  const leavePlaylistRef = useRef(() => {});
+  leavePlaylistRef.current = () => leavePlaylist();
   useEffect(() => {
     if (!playlistId) return;
-    const subscription = BackHandler.addEventListener('hardwareBackPress', () => { openPlaylistRef.current(null); return true; });
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => { leavePlaylistRef.current(); return true; });
     return () => subscription.remove();
   }, [playlistId]);
   function showTab(next: typeof tab) { setTab(next); openPlaylist(null); }
@@ -135,10 +144,12 @@ function Main() {
   return (
     <SafeAreaView style={s.screen} edges={['top', 'left', 'right']}>
       <StatusBar style={statusBarStyle} />
+      {/* Page area above the player: the header and the current page, plus the page-turn overlay when going back. */}
+      <View style={{ flex: 1 }}>
       <View style={s.header}>
         {playlist ? (
           <View style={s.titleRow}>
-            <View style={s.backIcon}><IconButton icon="chevron-back" label="返回播放清單" size={30} onPress={() => openPlaylist(null)} /></View>
+            <View style={s.backIcon}><IconButton icon="chevron-back" label="返回播放清單" size={30} onPress={leavePlaylist} /></View>
             <Text ref={heading} style={[s.heading, { flex: 1 }, transition && { opacity: 0 }]} numberOfLines={1}
               onLayout={() => { if (transition) heading.current?.measureInWindow((x, y, width, height) => setHeadingRect({ x, y, width, height })); }}>
               {playlist.name}
@@ -198,6 +209,8 @@ function Main() {
           onRemove={removeFromPlaylist}
           onDelete={deleteSong} animateOnMount={revealed} />
       </>}
+      {leaving && <PageFlip onDone={() => setLeaving(null)}><PlaylistGhost {...leaving} /></PageFlip>}
+      </View>
 
       <Player ref={player} track={selected} restartToken={restartToken} onPlayingChange={setPlaying}
         previous={position > 0 ? () => setActive(validQueue[position - 1]) : undefined}

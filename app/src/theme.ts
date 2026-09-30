@@ -56,6 +56,10 @@ export const s = StyleSheet.create({
   transitionLayer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none' },
   transitionCard: { position: 'absolute', backgroundColor: colors.surface, borderRadius: 14 },
   transitionTitle: { position: 'absolute' },
+  // Back navigation page turn (see PageFlip): fills the page area above the player.
+  flipLayer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', overflow: 'hidden' },
+  flipPage: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backfaceVisibility: 'hidden' },
+  flipShadow: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#000000' },
   dialogBackdrop: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.6)', justifyContent: 'center', padding: 24 },
   dialog: { backgroundColor: colors.surface, borderRadius: 16, padding: 18, gap: 8 },
   dialogActions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 8, marginTop: 4 },
