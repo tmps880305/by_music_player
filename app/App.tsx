@@ -128,8 +128,8 @@ function Main() {
         ) : <>
           <Text style={s.heading}>{tab === 'playlists' ? '播放清單' : '音樂庫'}</Text>
           <View style={s.row}>
-            <Button title={`音樂庫 · ${data.tracks.length}`} label={`音樂庫，${data.tracks.length} 首歌`} onPress={() => showTab('library')} />
-            <Button title={`播放清單 · ${data.playlists.length}`} label={`播放清單，${data.playlists.length} 個清單`} onPress={() => showTab('playlists')} />
+            <Button title={`音樂庫 · ${data.tracks.length}`} label={`音樂庫，${data.tracks.length} 首歌`} selected={tab === 'library'} onPress={() => showTab('library')} />
+            <Button title={`播放清單 · ${data.playlists.length}`} label={`播放清單，${data.playlists.length} 個清單`} selected={tab === 'playlists'} onPress={() => showTab('playlists')} />
           </View>
         </>}
         {!!error && <Text accessibilityRole="alert" style={s.error}>{error}</Text>}

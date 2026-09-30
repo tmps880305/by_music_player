@@ -26,6 +26,8 @@ export const s = StyleSheet.create({
   muted: { color: colors.muted, fontSize: 12, marginTop: 5 },
   row: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' },
   button: { paddingVertical: 12, paddingHorizontal: 10, minHeight: 44 },
+  // Underline under the current tab's text, inset by the text button's horizontal padding.
+  tabUnderline: { position: 'absolute', left: 10, right: 10, bottom: 6, height: 1.5, borderRadius: 1, backgroundColor: colors.accent },
   outlineButton: { borderWidth: 1.5, borderColor: colors.accent, borderRadius: 10, paddingHorizontal: 16, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   filledButton: { backgroundColor: colors.accent, borderRadius: 10, paddingHorizontal: 16, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   primaryAction: { alignSelf: 'flex-start', marginVertical: 6 },
