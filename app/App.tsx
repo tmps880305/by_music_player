@@ -19,7 +19,8 @@ function PlaybackWakeLock() {
   return null;
 }
 function Player({ track, next, previous }: { track: Track | null; next?: () => void; previous?: () => void }) {
-  const player = useAudioPlayer(track ? { uri: trackUri(track) } : null);
+  // One player for the whole session: swapping sources with replace() keeps iOS background playback alive between tracks.
+  const player = useAudioPlayer(null, { keepAudioSessionActive: true });
   const status = useAudioPlayerStatus(player);
   const [foreground, setForeground] = useState(AppState.currentState === 'active');
   useEffect(() => {
@@ -31,10 +32,18 @@ function Player({ track, next, previous }: { track: Track | null; next?: () => v
   const [seeking, setSeeking] = useState(false);
   const [seekPreview, setSeekPreview] = useState<number | null>(null);
   const seekBusy = useRef(false);
-  const autoStarted = useRef(false);
+  const loadedId = useRef<string | null>(null);
   const finished = useRef(false);
   useEffect(() => { let active = true; setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: true, interruptionMode: 'doNotMix' }).then(() => { if (active) setReady(true); }).catch(() => { if (active) setError('音訊初始化失敗'); }); return () => { active = false; }; }, []);
-  useEffect(() => { if (ready && status.isLoaded && track && !autoStarted.current) { autoStarted.current = true; try { player.setActiveForLockScreen(true, { title: track?.name ?? 'Baiyen Music Player' }); player.play(); } catch { setError('無法播放此音檔'); } } }, [ready, status.isLoaded, player, track]);
+  useEffect(() => {
+    if (!ready || loadedId.current === (track?.id ?? null)) return;
+    loadedId.current = track?.id ?? null; setError(''); setSeekPreview(null);
+    try {
+      if (!track) { player.pause(); player.replace(null); player.clearLockScreenControls(); return; }
+      player.replace({ uri: trackUri(track) });
+      player.setActiveForLockScreen(true, { title: track.name }); player.play();
+    } catch { setError('無法播放此音檔'); }
+  }, [ready, track?.id, player]);
   useEffect(() => { if (status.didJustFinish && !finished.current) { finished.current = true; next?.(); } if (status.playing) finished.current = false; }, [status.didJustFinish, status.playing, next]);
   async function seek(value: number) {
     if (!track || !status.isLoaded || !Number.isFinite(status.duration) || status.duration <= 0 || seekBusy.current) return;
@@ -49,8 +58,8 @@ function Player({ track, next, previous }: { track: Track | null; next?: () => v
   }
   return <View style={s.player}>{status.playing && foreground && <PlaybackWakeLock />}
     <Text style={s.label}>正在播放</Text><Text style={s.title} numberOfLines={1}>{track?.name ?? '請從音樂庫選擇歌曲'}</Text>
-    <SeekBar value={seekPreview ?? status.currentTime} maximum={Number.isFinite(status.duration) ? status.duration : 0} disabled={!track || !ready || !status.isLoaded || seeking || !Number.isFinite(status.duration) || status.duration <= 0} onPreview={setSeekPreview} onCommit={value => void seek(value)} onCancel={() => setSeekPreview(null)} />
-    <Text style={s.muted}>{time(seekPreview ?? status.currentTime)} / {time(status.duration)}{!track ? '' : !status.isLoaded ? ' · 載入中' : ''}</Text>
+    <SeekBar value={track ? seekPreview ?? status.currentTime : 0} maximum={track && Number.isFinite(status.duration) ? status.duration : 0} disabled={!track || !ready || !status.isLoaded || seeking || !Number.isFinite(status.duration) || status.duration <= 0} onPreview={setSeekPreview} onCommit={value => void seek(value)} onCancel={() => setSeekPreview(null)} />
+    <Text style={s.muted}>{time(track ? seekPreview ?? status.currentTime : 0)} / {time(track ? status.duration : 0)}{!track ? '' : !status.isLoaded ? ' · 載入中' : ''}</Text>
     <View style={s.row}><Button title="上一首" onPress={() => previous?.()} disabled={!previous} /><Button title={status.playing ? '暫停' : '播放'} onPress={() => void play()} disabled={!track || !ready || !status.isLoaded || seeking} /><Button title="下一首" onPress={() => next?.()} disabled={!next} /><Button title="重播" onPress={() => void play(true)} disabled={!track || !ready || !status.isLoaded || seeking} /></View>
     {!!(error || status.error) && <Text accessibilityRole="alert" style={s.error}>{error || status.error}</Text>}
   </View>;
@@ -128,7 +137,7 @@ function Main() {
       </View>} />
     </>}
     </>}
-    <Player key={selected?.id ?? 'sample'} track={selected} previous={position > 0 ? () => setActive(validQueue[position - 1]) : undefined} next={position >= 0 && position < validQueue.length - 1 ? () => setActive(validQueue[position + 1]) : undefined} />
+    <Player track={selected} previous={position > 0 ? () => setActive(validQueue[position - 1]) : undefined} next={position >= 0 && position < validQueue.length - 1 ? () => setActive(validQueue[position + 1]) : undefined} />
     <Modal visible={editing && !!playlist} animationType="slide" onRequestClose={() => setEditing(false)}><SafeAreaView style={s.screen}><View style={s.header}><Text style={s.heading}>選擇清單歌曲</Text><Text style={s.muted}>點選歌曲即可加入或移除，變更會立即儲存。</Text><Button title="完成" onPress={() => setEditing(false)} />{!!error && <Text style={s.error}>{error}</Text>}</View><FlatList data={sortedTracks} keyExtractor={t => t.id} contentContainerStyle={s.list} ListEmptyComponent={<Text style={s.muted}>音樂庫尚無歌曲，請先完成並匯入 MP3。</Text>} renderItem={({ item }) => <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: playlist?.trackIds.includes(item.id), disabled: busy }} disabled={busy} style={s.item} onPress={() => changePlaylist(p => toggleTrack(p, item.id))}><Text style={s.title}>{playlist?.trackIds.includes(item.id) ? '✓ ' : '＋ '}{item.name}</Text></Pressable>} /></SafeAreaView></Modal>
   </SafeAreaView>;
 }
