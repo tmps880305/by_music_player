@@ -34,11 +34,21 @@ export const s = StyleSheet.create({
   leadingIcon: { marginLeft: -4 },
   iconRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   compactButton: { minHeight: 38, paddingHorizontal: 16, borderRadius: 9 },
-  // Onboarding hint (see CoachBubble): looping arrow up to the + button, with text below it at the top-right.
-  coachArea: { minHeight: 100 },
+  // Onboarding hints (see CoachHint), laid out in the empty library's list area.
+  // - To +: loopUpArrow (tip at x 90.5 of 110). The + centre is 19.5pt in from the list content's right edge
+  //   (18 header padding - 4 trailingIcon + 47 / 2 - 18 list padding), so the box hugs the right edge; the list clips
+  //   at its top, so the tip ends there. Its text is 70pt below the box.
+  // - To 加入範例歌曲: riseLeftArrow (tip at (18, 9) of 64×80). The button is 16pt padding + six 14pt characters, so the
+  //   gap between 加 and 入 is at x ≈ 30; the box at (12, 56) puts the tip there, 21pt below the button (y 6–44),
+  //   The hint text sits just below the tail start (74, 134), placed so the tail aims at the gap between 擊 and 加
+  //   (two 14pt characters in, x ≈ 77).
+  coachArea: { minHeight: 176 },
   coachLayer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none' },
-  coachArrow: { position: 'absolute', top: 0, right: 0 },
-  coachText: { position: 'absolute', top: 70, right: 0, color: colors.accent, fontSize: 14, fontWeight: '600' },
+  coachText: { position: 'absolute', color: colors.accent, fontSize: 14, fontWeight: '600' },
+  coachArrowToImport: { position: 'absolute', top: 0, right: 0 },
+  coachTextToImport: { top: 70, right: 0 },
+  coachArrowToAction: { position: 'absolute', top: 56, left: 12 },
+  coachTextToAction: { top: 150, left: 49 },
   dialogBackdrop: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.6)', justifyContent: 'center', padding: 24 },
   dialog: { backgroundColor: colors.surface, borderRadius: 16, padding: 18, gap: 8 },
   dialogActions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 8, marginTop: 4 },

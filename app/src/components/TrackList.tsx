@@ -5,7 +5,7 @@ import type { Playlist, Track } from '../model';
 import { useLongPressDrag } from '../useLongPressDrag';
 import { colors, s } from '../theme';
 import Button from './Button';
-import CoachBubble from './CoachBubble';
+import CoachHint, { loopUpArrow, riseLeftArrow } from './CoachHint';
 import IconButton from './IconButton';
 
 type Props = {
@@ -15,8 +15,9 @@ type Props = {
   activeId: string | null;
   busy: boolean;
   emptyText: string;
-  // Optional button under the empty-state text. With `coach`, an onboarding bubble replaces the text and points at it.
-  emptyAction?: { title: string; onPress: () => void; coach?: string };
+  // Optional button under the empty-state text. With `coach`, onboarding hints replace the text: one pointing at the
+  // + import button above the list, one at this button.
+  emptyAction?: { title: string; onPress: () => void; coach?: { toImport: string; toAction: string } };
   onPlay: (track: Track) => void;
   onReorder: (from: number, to: number) => void;
   onRemove: (track: Track) => void;
@@ -46,11 +47,14 @@ function DraggableTrackCard(props: Omit<CardProps, 'onLongPress'> & { dragEnable
 
 export default function TrackList({ tracks, playlist, activeId, busy, emptyText, emptyAction, onPlay, onReorder, onRemove, onDelete }: Props) {
   // A View, not a fragment: ReorderableList passes onLayout to the empty component.
-  // With a coach hint, the empty view reserves room for the hint in its top-right corner.
+  // With coach hints, the empty view reserves room for them below the button.
   const empty = <View style={emptyAction?.coach ? s.coachArea : undefined}>
     {!emptyAction?.coach && <Text style={s.muted}>{emptyText}</Text>}
     {emptyAction && <View style={s.primaryAction}><Button title={emptyAction.title} filled compact disabled={busy} onPress={emptyAction.onPress} /></View>}
-    {emptyAction?.coach && <CoachBubble text={emptyAction.coach} />}
+    {emptyAction?.coach && <View style={s.coachLayer}>
+      <CoachHint text={emptyAction.coach.toImport} arrow={loopUpArrow} arrowStyle={s.coachArrowToImport} textStyle={s.coachTextToImport} />
+      <CoachHint text={emptyAction.coach.toAction} arrow={riseLeftArrow} arrowStyle={s.coachArrowToAction} textStyle={s.coachTextToAction} />
+    </View>}
   </View>;
   const card = (track: Track): Omit<CardProps, 'onLongPress'> => ({
     track, active: track.id === activeId, busy, inPlaylist: !!playlist,

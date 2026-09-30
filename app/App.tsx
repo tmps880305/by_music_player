@@ -113,7 +113,7 @@ function Main() {
   const emptyText = search ? '找不到符合的歌曲。'
     : playlist ? '清單還沒有歌曲，點選 + 加入歌曲。'
     : '音樂庫還沒有歌曲。';
-  const emptyAction = !playlist && !search && !data.tracks.length ? { title: '加入範例歌曲', onPress: () => void library.addSamples(), coach: '點擊＋加入歌曲' } : undefined;
+  const emptyAction = !playlist && !search && !data.tracks.length ? { title: '加入範例歌曲', onPress: () => void library.addSamples(), coach: { toImport: '點擊＋加入歌曲', toAction: '點擊加入範例歌曲' } } : undefined;
 
   // The bottom inset is applied inside Player so its background reaches the screen edge.
   return (
