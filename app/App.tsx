@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Text, TextInput, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import DeviceFrame from './src/DeviceFrame';
 import { Alert } from './src/dialogs';
 import { moveTrack, toggleTrack, type Track } from './src/model';
 import { colors, s } from './src/theme';
@@ -13,7 +14,11 @@ import PlaylistList from './src/components/PlaylistList';
 import PlaylistToolbar from './src/components/PlaylistToolbar';
 import TrackList from './src/components/TrackList';
 
-export default function App() { return <SafeAreaProvider><Main /></SafeAreaProvider>; }
+const statusBarStyle = 'light';
+
+export default function App() {
+  return <SafeAreaProvider><DeviceFrame statusBar={statusBarStyle}><Main /></DeviceFrame></SafeAreaProvider>;
+}
 
 function Main() {
   const library = useLibrary();
@@ -65,7 +70,7 @@ function Main() {
   // The bottom inset is applied inside Player so its background reaches the screen edge.
   return (
     <SafeAreaView style={s.screen} edges={['top', 'left', 'right']}>
-      <StatusBar style="light" />
+      <StatusBar style={statusBarStyle} />
       <View style={s.header}>
         <Text style={s.label}>BAIYEN MUSIC PLAYER</Text>
         <Text style={s.heading}>{playlist ? playlist.name : '我的音樂'}</Text>
