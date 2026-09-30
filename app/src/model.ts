@@ -8,11 +8,12 @@ export function removeTrack(data: Library, id: string): Library {
 export function toggleTrack(playlist: Playlist, id: string): Playlist {
   return { ...playlist, trackIds: playlist.trackIds.includes(id) ? playlist.trackIds.filter(t => t !== id) : [...playlist.trackIds, id] };
 }
-export function moveTrack(playlist: Playlist, index: number, direction: number): Playlist {
+// Moves the song at `from` to position `to`, shifting the songs in between (drag-and-drop order).
+export function reorderTrack(playlist: Playlist, from: number, to: number): Playlist {
   const ids = [...playlist.trackIds];
-  const target = index + direction;
-  if (index < 0 || index >= ids.length || target < 0 || target >= ids.length) return playlist;
-  [ids[index], ids[target]] = [ids[target], ids[index]];
+  if (from === to || from < 0 || from >= ids.length || to < 0 || to >= ids.length) return playlist;
+  const [id] = ids.splice(from, 1);
+  ids.splice(to, 0, id);
   return { ...playlist, trackIds: ids };
 }
 export function parseLibrary(raw: string): Library {

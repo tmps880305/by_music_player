@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, BackHandler, Text, TextInput, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import DeviceFrame from './src/DeviceFrame';
 import { Alert } from './src/dialogs';
-import { moveTrack, toggleTrack, type Track } from './src/model';
+import { toggleTrack, type Track } from './src/model';
 import { colors, s } from './src/theme';
 import { useLibrary } from './src/useLibrary';
 import Button from './src/components/Button';
@@ -18,7 +19,8 @@ import TrackList from './src/components/TrackList';
 const statusBarStyle = 'light';
 
 export default function App() {
-  return <SafeAreaProvider><DeviceFrame statusBar={statusBarStyle}><Main /></DeviceFrame></SafeAreaProvider>;
+  // GestureHandlerRootView enables the long-press drag to reorder playlist songs.
+  return <GestureHandlerRootView style={{ flex: 1 }}><SafeAreaProvider><DeviceFrame statusBar={statusBarStyle}><Main /></DeviceFrame></SafeAreaProvider></GestureHandlerRootView>;
 }
 
 function Main() {
@@ -149,9 +151,9 @@ function Main() {
             <TextInput accessibilityLabel="搜尋歌曲" style={s.input} placeholder="搜尋歌曲名稱" placeholderTextColor={colors.placeholder} value={search} onChangeText={setSearch} />
           </>}
         </View>
-        <TrackList tracks={visible} playlist={playlist} editing={editMode} activeId={active} busy={busy} emptyText={emptyText} emptyAction={emptyAction}
+        <TrackList tracks={visible} playlist={playlist} activeId={active} busy={busy} emptyText={emptyText} emptyAction={emptyAction}
           onPlay={track => choose(track, playlist ? playlist.trackIds : visible.map(t => t.id), playlist?.id ?? null)}
-          onMove={(track, direction) => changePlaylist(p => moveTrack(p, p.trackIds.indexOf(track.id), direction))}
+          onReorder={(from, to) => { if (playlist) void library.reorderPlaylist(playlist.id, from, to); }}
           onRemove={removeFromPlaylist}
           onDelete={deleteSong} />
       </>}

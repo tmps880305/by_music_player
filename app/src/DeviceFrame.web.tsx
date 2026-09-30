@@ -18,7 +18,7 @@ export default function DeviceFrame({ children, statusBar }: { children: ReactNo
         <SafeAreaFrameContext.Provider value={{ x: 0, y: 0, width: device.width, height: device.height }}>
           <SafeAreaInsetsContext.Provider value={device.insets}>{children}</SafeAreaInsetsContext.Provider>
         </SafeAreaFrameContext.Provider>
-        <View pointerEvents="none" style={f.statusBar}>
+        <View style={f.statusBar}>
           <Text style={[f.clock, { color: ink }]}>9:41</Text>
           <View style={f.island} />
           <View style={f.icons}>
@@ -27,7 +27,7 @@ export default function DeviceFrame({ children, statusBar }: { children: ReactNo
             <Ionicons name="battery-full" size={22} color={ink} />
           </View>
         </View>
-        <View pointerEvents="none" style={[f.homeIndicator, { backgroundColor: ink }]} />
+        <View style={[f.homeIndicator, { backgroundColor: ink }]} />
       </View>
     </View>
   );
@@ -36,9 +36,10 @@ export default function DeviceFrame({ children, statusBar }: { children: ReactNo
 const f = StyleSheet.create({
   page: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#2A2A2E' },
   phone: { width: '100%', maxWidth: device.width, height: '100%', maxHeight: device.height, borderRadius: 55, overflow: 'hidden' },
-  statusBar: { position: 'absolute', top: 0, left: 0, right: 0, height: device.insets.top, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 36 },
+  // Overlays ignore touches so the app underneath stays usable.
+  statusBar: { pointerEvents: 'none', position: 'absolute', top: 0, left: 0, right: 0, height: device.insets.top, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 36 },
   clock: { fontSize: 17, fontWeight: '600', width: 70 },
   island: { position: 'absolute', top: 11, left: '50%', marginLeft: -63, width: 126, height: 37, borderRadius: 18.5, backgroundColor: '#000000' },
   icons: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 5, width: 70 },
-  homeIndicator: { position: 'absolute', bottom: 8, left: '50%', marginLeft: -67, width: 134, height: 5, borderRadius: 3 },
+  homeIndicator: { pointerEvents: 'none', position: 'absolute', bottom: 8, left: '50%', marginLeft: -67, width: 134, height: 5, borderRadius: 3 },
 });

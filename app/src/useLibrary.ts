@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as DocumentPicker from 'expo-document-picker';
 import type { DocumentPickerAsset } from 'expo-document-picker';
-import { emptyLibrary, removeTrack, type Library, type Playlist, type Track } from './model';
+import { emptyLibrary, removeTrack, reorderTrack, type Library, type Playlist, type Track } from './model';
 import { copyTrack, deleteTrackFile, loadLibrary, newId, saveLibrary } from './storage';
 import { sampleAssets } from './samples';
 
@@ -22,6 +22,12 @@ export function useLibrary() {
   useEffect(() => { void load(); }, []);
 
   async function commit(value: Library) { await saveLibrary(value); current.current = value; setData(value); }
+  // Shows the change before saving and rolls back if the save fails; used where the UI must update instantly (drag reorder).
+  async function commitOptimistic(value: Library) {
+    const previous = current.current;
+    current.current = value; setData(value);
+    try { await saveLibrary(value); } catch (e) { current.current = previous; setData(previous); throw e; }
+  }
   async function run<T>(action: () => Promise<T>): Promise<T | undefined> {
     if (locked.current || !loaded) return;
     locked.current = true; setBusy(true); setError(''); setNotice('');
@@ -61,10 +67,13 @@ export function useLibrary() {
   const updatePlaylist = (id: string, transform: (p: Playlist) => Playlist) => run(async () => {
     await commit({ ...current.current, playlists: current.current.playlists.map(p => p.id === id ? transform(p) : p) });
   });
+  const reorderPlaylist = (id: string, from: number, to: number) => run(async () => {
+    await commitOptimistic({ ...current.current, playlists: current.current.playlists.map(p => p.id === id ? reorderTrack(p, from, to) : p) });
+  });
   const deletePlaylist = (id: string) => run(async () => {
     await commit({ ...current.current, playlists: current.current.playlists.filter(p => p.id !== id) });
     return true;
   });
 
-  return { data, loaded, busy, error, notice, load, importFiles, addSamples, deleteTrack, createPlaylist, updatePlaylist, deletePlaylist };
+  return { data, loaded, busy, error, notice, load, importFiles, addSamples, deleteTrack, createPlaylist, updatePlaylist, reorderPlaylist, deletePlaylist };
 }
