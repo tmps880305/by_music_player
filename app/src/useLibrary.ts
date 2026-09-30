@@ -40,13 +40,23 @@ export function useLibrary() {
     finally { locked.current = false; setBusy(false); }
   }
 
-  // Copies files into app storage and saves them to the library; returns the failure summary for the notice.
+  // Imports files one at a time: each is copied into app storage and saved to the library as soon as it's ready, so its
+  // card appears right away. A file that fails to copy or save is skipped (its copy removed) and the rest carry on.
+  // Returns the counts for the notice.
   async function addAssets(assets: DocumentPickerAsset[]) {
-    const added: Track[] = []; const failed: string[] = [];
-    for (const asset of assets) { try { added.push(await copyTrack(asset)); } catch { failed.push(asset.name); } }
-    try { if (added.length) await commit({ ...current.current, tracks: [...current.current.tracks, ...added] }); }
-    catch { await Promise.all(added.map(t => deleteTrackFile(t).catch(() => {}))); throw Error('儲存失敗，這次匯入未加入音樂庫，請重試。'); }
-    return { count: added.length, failures: failed.length ? `；${failed.length} 個失敗：${failed.join('、')}` : '' };
+    let count = 0; const failed: string[] = [];
+    for (const asset of assets) {
+      let track: Track | undefined;
+      try {
+        track = await copyTrack(asset);
+        await commit({ ...current.current, tracks: [...current.current.tracks, track] });
+        count++;
+      } catch {
+        if (track) await deleteTrackFile(track).catch(() => {});
+        failed.push(asset.name);
+      }
+    }
+    return { count, failures: failed.length ? `；${failed.length} 個失敗：${failed.join('、')}` : '' };
   }
   const importFiles = () => run(async () => {
     const result = await DocumentPicker.getDocumentAsync({ type: ['audio/mpeg', 'audio/mp3'], multiple: true, copyToCacheDirectory: true });

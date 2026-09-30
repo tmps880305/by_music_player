@@ -10,12 +10,22 @@ const DROP = 16;
 export function useEntranceDelays(ids: string[]) {
   const seen = useRef<Set<string> | null>(null);
   const delays = useRef(new Map<string, number>());
+  // When the last scheduled entrance starts; items arriving in quick succession (fast imports save one by one) are
+  // spaced at least STAGGER_MS apart so they still appear one by one.
+  const lastStart = useRef(0);
   if (!seen.current) seen.current = new Set(ids);
   else {
     const added = ids.filter(id => !seen.current!.has(id));
-    // A new batch replaces the previous one's delays (read-only in render, so re-renders before mount are safe).
-    if (added.length) delays.current = new Map(added.map((id, i) => [id, i * STAGGER_MS]));
-    for (const id of added) seen.current.add(id);
+    if (added.length) {
+      const now = Date.now();
+      // A new batch replaces the previous one's delays (read-only in render, so re-renders before mount are safe).
+      delays.current = new Map(added.map(id => {
+        const start = Math.max(now, lastStart.current + STAGGER_MS);
+        lastStart.current = start;
+        return [id, start - now];
+      }));
+      for (const id of added) seen.current.add(id);
+    }
   }
   return (id: string) => delays.current.get(id);
 }
