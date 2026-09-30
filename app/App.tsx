@@ -13,7 +13,7 @@ import IconButton from './src/components/IconButton';
 import Player, { type PlayerHandle } from './src/components/Player';
 import PlaylistEditor from './src/components/PlaylistEditor';
 import PlaylistList from './src/components/PlaylistList';
-import PlaylistToolbar from './src/components/PlaylistToolbar';
+import RenameDialog from './src/components/RenameDialog';
 import TrackList from './src/components/TrackList';
 
 const statusBarStyle = 'light';
@@ -29,8 +29,8 @@ function Main() {
   const [tab, setTab] = useState<'library' | 'playlists'>('library');
   const [search, setSearch] = useState('');
   const [playlistId, setPlaylistId] = useState<string | null>(null);
-  // editMode reveals the playlist's editing tools; picking shows the add/remove songs sheet.
-  const [editMode, setEditMode] = useState(false);
+  // picking shows the add/remove songs sheet; renamingId is the playlist whose rename dialog is open.
+  const [renamingId, setRenamingId] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
   const [name, setName] = useState('');
   const [active, setActive] = useState<string | null>(null);
@@ -47,7 +47,7 @@ function Main() {
   function openPlaylist(id: string | null) {
     // Leaving a playlist whose song is paused resets playback, so the next visit starts with nothing selected.
     if (playlistId && queueSource === playlistId && !playing) { setActive(null); setQueue([]); setQueueSource(null); }
-    setPlaylistId(id); setSearch(''); setName(''); setEditMode(false); setResumePlaylist(null);
+    setPlaylistId(id); setSearch(''); setName(''); setResumePlaylist(null);
   }
   // Android back button/gesture: leave the open playlist instead of exiting the app. The ref keeps the handler
   // calling the latest openPlaylist, which reads current playback state.
@@ -111,7 +111,7 @@ function Main() {
   const playlistOwnsPlayback = !!playlist && queueSource === playlist.id && !!active && playlist.trackIds.includes(active);
   const playlistPlaying = playlistOwnsPlayback && playing;
   const emptyText = search ? '找不到符合的歌曲。'
-    : playlist ? (editMode ? '清單還沒有歌曲，點選「加入／移除歌曲」。' : '清單還沒有歌曲，點選「編輯」加入歌曲。')
+    : playlist ? '清單還沒有歌曲，點選 + 加入歌曲。'
     : '點選「匯入 MP3」從裝置選擇音樂檔案，或先加入範例歌曲試聽。';
   const emptyAction = !playlist && !search && !data.tracks.length ? { title: '加入範例歌曲', onPress: () => void library.addSamples() } : undefined;
 
@@ -142,27 +142,22 @@ function Main() {
           {error ? <Button title="重新載入" onPress={() => void library.load()} /> : <ActivityIndicator color={colors.accent} />}
         </View>
       ) : tab === 'playlists' && !playlist ? (
-        <PlaylistList playlists={data.playlists} busy={busy} name={name} onNameChange={setName} onCreate={() => void createPlaylist()} onOpen={openPlaylist} onDelete={p => deletePlaylist(p.id)} />
+        <PlaylistList playlists={data.playlists} busy={busy} name={name} onNameChange={setName} onCreate={() => void createPlaylist()} onOpen={openPlaylist} onRename={p => setRenamingId(p.id)} onDelete={p => deletePlaylist(p.id)} />
       ) : <>
         <View style={s.header}>
           {playlist ? <>
             <View style={s.actionRow}>
               <View style={[s.leadingIcon, s.iconRow]}>
-                {/* Same as 加入／移除歌曲; sized like the play button. */}
+                {/* Opens the add/remove songs sheet; sized like the play button. */}
                 <IconButton icon="add-circle" label="加入／移除歌曲" size={47} onPress={() => setPicking(true)} />
-                {/* Temporary home for edit mode (rename) until its placement is decided. */}
-                <Button title={editMode ? '完成' : '編輯'} filled compact onPress={() => { setEditMode(!editMode); setName(''); }} />
               </View>
-              {!editMode && <View style={[s.trailingIcon, s.iconRow]}>
+              <View style={[s.trailingIcon, s.iconRow]}>
                 {/* Restarts the whole playlist from its first song, whatever is currently playing. */}
                 <IconButton icon="refresh" label="從第一首重新播放" size={28} disabled={!listed.length} onPress={() => choose(listed[0], playlist.trackIds, playlist.id, true)} />
                 {/* The circle glyph is 0.81em tall, so size 47 draws a 38pt circle. */}
                 <IconButton icon={playlistPlaying ? 'pause-circle' : 'play-circle'} label={playlistPlaying ? '暫停播放清單' : '播放清單'} size={47} disabled={!listed.length} onPress={playPlaylist} />
-              </View>}
+              </View>
             </View>
-            {editMode && <PlaylistToolbar busy={busy} name={name} onNameChange={setName}
-              onPick={() => setPicking(true)}
-              onRename={() => { changePlaylist(p => ({ ...p, name: name.trim() })); setName(''); }} />}
           </> : <>
             <Text style={s.muted}>依名稱排序 · 由小到大</Text>
             <TextInput accessibilityLabel="搜尋歌曲" style={s.input} placeholder="搜尋歌曲名稱" placeholderTextColor={colors.placeholder} value={search} onChangeText={setSearch} />
@@ -180,6 +175,8 @@ function Main() {
         next={position >= 0 && position < validQueue.length - 1 ? () => setActive(validQueue[position + 1]) : undefined} />
       <PlaylistEditor visible={picking && !!playlist} tracks={sortedTracks} selectedIds={playlist?.trackIds ?? []} busy={busy} error={error}
         onToggle={track => changePlaylist(p => toggleTrack(p, track.id))} onClose={() => setPicking(false)} />
+      <RenameDialog playlist={data.playlists.find(p => p.id === renamingId) ?? null} busy={busy} error={error} onCancel={() => setRenamingId(null)}
+        onSave={newName => { if (renamingId) void library.updatePlaylist(renamingId, p => ({ ...p, name: newName })).then(ok => { if (ok) setRenamingId(null); }); }} />
     </SafeAreaView>
   );
 }

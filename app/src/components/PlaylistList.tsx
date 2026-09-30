@@ -11,10 +11,11 @@ type Props = {
   onNameChange: (name: string) => void;
   onCreate: () => void;
   onOpen: (id: string) => void;
+  onRename: (playlist: Playlist) => void;
   onDelete: (playlist: Playlist) => void;
 };
 
-export default function PlaylistList({ playlists, busy, name, onNameChange, onCreate, onOpen, onDelete }: Props) {
+export default function PlaylistList({ playlists, busy, name, onNameChange, onCreate, onOpen, onRename, onDelete }: Props) {
   return (
     <>
       <View style={[s.header, s.inputRow]}>
@@ -29,6 +30,7 @@ export default function PlaylistList({ playlists, busy, name, onNameChange, onCr
               <Text style={s.title}>{item.name}</Text>
               <Text style={s.muted}>{item.trackIds.length} 首 · 點選開啟</Text>
             </Pressable>
+            <IconButton icon="pencil-outline" label={`重新命名 ${item.name}`} size={22} color={colors.muted} disabled={busy} onPress={() => onRename(item)} />
             <IconButton icon="trash-outline" label={`刪除 ${item.name}`} size={22} color={colors.muted} disabled={busy} onPress={() => onDelete(item)} />
           </View>
         )} />

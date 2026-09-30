@@ -66,6 +66,7 @@ export function useLibrary() {
   });
   const updatePlaylist = (id: string, transform: (p: Playlist) => Playlist) => run(async () => {
     await commit({ ...current.current, playlists: current.current.playlists.map(p => p.id === id ? transform(p) : p) });
+    return true;
   });
   const reorderPlaylist = (id: string, from: number, to: number) => run(async () => {
     await commitOptimistic({ ...current.current, playlists: current.current.playlists.map(p => p.id === id ? reorderTrack(p, from, to) : p) });
