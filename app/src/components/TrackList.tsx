@@ -11,16 +11,21 @@ type Props = {
   activeId: string | null;
   busy: boolean;
   emptyText: string;
+  // Optional button under the empty-state text.
+  emptyAction?: { title: string; onPress: () => void };
   onPlay: (track: Track) => void;
   onMove: (track: Track, direction: number) => void;
   onRemove: (track: Track) => void;
   onDelete: (track: Track) => void;
 };
 
-export default function TrackList({ tracks, playlist, editing = false, activeId, busy, emptyText, onPlay, onMove, onRemove, onDelete }: Props) {
+export default function TrackList({ tracks, playlist, editing = false, activeId, busy, emptyText, emptyAction, onPlay, onMove, onRemove, onDelete }: Props) {
   return (
     <FlatList data={tracks} keyExtractor={t => t.id} contentContainerStyle={s.list}
-      ListEmptyComponent={<Text style={s.muted}>{emptyText}</Text>}
+      ListEmptyComponent={<>
+        <Text style={s.muted}>{emptyText}</Text>
+        {emptyAction && <View style={s.primaryAction}><Button title={emptyAction.title} filled compact disabled={busy} onPress={emptyAction.onPress} /></View>}
+      </>}
       renderItem={({ item }) => {
         const index = playlist?.trackIds.indexOf(item.id) ?? -1;
         return (

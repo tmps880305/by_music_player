@@ -44,7 +44,8 @@
           "recordAudioAndroid": false,
           "microphonePermission": false
         }
-      ]
+      ],
+      "expo-asset"
     ]
   }
 }

@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import * as DocumentPicker from 'expo-document-picker';
+import type { DocumentPickerAsset } from 'expo-document-picker';
 import { emptyLibrary, removeTrack, type Library, type Playlist, type Track } from './model';
 import { copyTrack, deleteTrackFile, loadLibrary, newId, saveLibrary } from './storage';
+import { sampleAssets } from './samples';
 
 // Owns the persisted library. Every mutation goes through run(), which serialises writes and reports errors.
 export function useLibrary() {
@@ -28,14 +30,23 @@ export function useLibrary() {
     finally { locked.current = false; setBusy(false); }
   }
 
+  // Copies files into app storage and saves them to the library; returns the failure summary for the notice.
+  async function addAssets(assets: DocumentPickerAsset[]) {
+    const added: Track[] = []; const failed: string[] = [];
+    for (const asset of assets) { try { added.push(await copyTrack(asset)); } catch { failed.push(asset.name); } }
+    try { if (added.length) await commit({ ...current.current, tracks: [...current.current.tracks, ...added] }); }
+    catch { await Promise.all(added.map(t => deleteTrackFile(t).catch(() => {}))); throw Error('儲存失敗，這次匯入未加入音樂庫，請重試。'); }
+    return { count: added.length, failures: failed.length ? `；${failed.length} 個失敗：${failed.join('、')}` : '' };
+  }
   const importFiles = () => run(async () => {
     const result = await DocumentPicker.getDocumentAsync({ type: ['audio/mpeg', 'audio/mp3'], multiple: true, copyToCacheDirectory: true });
     if (result.canceled) return;
-    const added: Track[] = []; const failed: string[] = [];
-    for (const asset of result.assets) { try { added.push(await copyTrack(asset)); } catch { failed.push(asset.name); } }
-    try { if (added.length) await commit({ ...current.current, tracks: [...current.current.tracks, ...added] }); }
-    catch { await Promise.all(added.map(t => deleteTrackFile(t).catch(() => {}))); throw Error('儲存失敗，這次匯入未加入音樂庫，請重試。'); }
-    setNotice(`已匯入 ${added.length} 首${failed.length ? `；${failed.length} 個失敗：${failed.join('、')}` : ''}`);
+    const { count, failures } = await addAssets(result.assets);
+    setNotice(`已匯入 ${count} 首${failures}`);
+  });
+  const addSamples = () => run(async () => {
+    const { count, failures } = await addAssets(await sampleAssets());
+    setNotice(`已加入 ${count} 首範例歌曲${failures}`);
   });
   const deleteTrack = (track: Track) => run(async () => {
     await commit(removeTrack(current.current, track.id));
@@ -55,5 +66,5 @@ export function useLibrary() {
     return true;
   });
 
-  return { data, loaded, busy, error, notice, load, importFiles, deleteTrack, createPlaylist, updatePlaylist, deletePlaylist };
+  return { data, loaded, busy, error, notice, load, importFiles, addSamples, deleteTrack, createPlaylist, updatePlaylist, deletePlaylist };
 }

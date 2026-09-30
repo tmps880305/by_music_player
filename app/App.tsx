@@ -76,7 +76,8 @@ function Main() {
   const selected = data.tracks.find(t => t.id === active) ?? null;
   const emptyText = search ? '找不到符合的歌曲。'
     : playlist ? (editMode ? '清單還沒有歌曲，點選「加入／移除歌曲」。' : '清單還沒有歌曲，點選「編輯」加入歌曲。')
-    : '點選「匯入 MP3」，從裝置選擇音樂檔案。';
+    : '點選「匯入 MP3」從裝置選擇音樂檔案，或先加入範例歌曲試聽。';
+  const emptyAction = !playlist && !search && !data.tracks.length ? { title: '加入範例歌曲', onPress: () => void library.addSamples() } : undefined;
 
   // The bottom inset is applied inside Player so its background reaches the screen edge.
   return (
@@ -121,7 +122,7 @@ function Main() {
             <TextInput accessibilityLabel="搜尋歌曲" style={s.input} placeholder="搜尋歌曲名稱" placeholderTextColor={colors.placeholder} value={search} onChangeText={setSearch} />
           </>}
         </View>
-        <TrackList tracks={visible} playlist={playlist} editing={editMode} activeId={active} busy={busy} emptyText={emptyText}
+        <TrackList tracks={visible} playlist={playlist} editing={editMode} activeId={active} busy={busy} emptyText={emptyText} emptyAction={emptyAction}
           onPlay={track => choose(track, playlist ? playlist.trackIds : visible.map(t => t.id))}
           onMove={(track, direction) => changePlaylist(p => moveTrack(p, p.trackIds.indexOf(track.id), direction))}
           onRemove={track => changePlaylist(p => ({ ...p, trackIds: p.trackIds.filter(id => id !== track.id) }))}
