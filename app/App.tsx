@@ -21,13 +21,25 @@ import PlaylistGhost, { type PlaylistSnapshot } from './src/components/PlaylistG
 import RenameDialog from './src/components/RenameDialog';
 import SlidingHeading from './src/components/SlidingHeading';
 import TabSlide from './src/components/TabSlide';
+import SplashIntro from './src/components/SplashIntro';
 import TrackList from './src/components/TrackList';
 
 const statusBarStyle = 'light';
 
 export default function App() {
+  // The opening intro plays over the app once per launch while the app loads underneath.
+  const [intro, setIntro] = useState(true);
   // GestureHandlerRootView enables the long-press drag to reorder playlist songs.
-  return <GestureHandlerRootView style={{ flex: 1 }}><SafeAreaProvider><DeviceFrame statusBar={statusBarStyle}><Main /></DeviceFrame></SafeAreaProvider></GestureHandlerRootView>;
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <DeviceFrame statusBar={statusBarStyle}>
+          <Main />
+          {intro && <SplashIntro onDone={() => setIntro(false)} />}
+        </DeviceFrame>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  );
 }
 
 function Main() {

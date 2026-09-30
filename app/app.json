@@ -45,7 +45,13 @@
           "microphonePermission": false
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#E5E8E2"
+        }
+      ]
     ]
   }
 }

@@ -72,6 +72,10 @@ export const s = StyleSheet.create({
   flipLayer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', overflow: 'hidden' },
   flipPage: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backfaceVisibility: 'hidden' },
   flipShadow: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#000000' },
+  // Opening intro (see SplashIntro): covers the whole screen, wordmark centred.
+  splash: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' },
+  splashFill: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+  splashWordmark: { color: '#1D78B9', fontSize: 44, fontWeight: '800', letterSpacing: 1 },
   dialogBackdrop: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.6)', justifyContent: 'center', padding: 24 },
   dialog: { backgroundColor: colors.surface, borderRadius: 16, padding: 18, gap: 8 },
   dialogActions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 8, marginTop: 4 },
