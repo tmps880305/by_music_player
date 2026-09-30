@@ -82,7 +82,7 @@ function Main() {
         <Text style={s.label}>BAIYEN MUSIC PLAYER</Text>
         {playlist ? (
           <View style={s.titleRow}>
-            <View style={s.backIcon}><IconButton icon="chevron-back" label="返回播放清單" onPress={() => openPlaylist(null)} /></View>
+            <View style={s.backIcon}><IconButton icon="chevron-back" label="返回播放清單" size={30} onPress={() => openPlaylist(null)} /></View>
             <Text style={[s.heading, { flex: 1 }]} numberOfLines={1}>{playlist.name}</Text>
           </View>
         ) : <>

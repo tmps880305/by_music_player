@@ -16,8 +16,9 @@ export const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   header: { paddingHorizontal: 18, paddingTop: 8 },
   titleRow: { flexDirection: 'row', alignItems: 'center' },
-  // Pulls the 44pt tap target left so the chevron lines up with the content edge.
-  backIcon: { marginLeft: -14, marginRight: -4 },
+  // Pulls the 44pt tap target left so the chevron lines up with the content edge. The icon font sits its
+  // glyph ~1pt higher than the heading's letters, so nudge it down to line up with the text visually.
+  backIcon: { marginLeft: -14, marginRight: -4, transform: [{ translateY: 1 }] },
   // includeFontPadding (Android only) adds space above the glyphs and pushes the title below icons beside it.
   heading: { color: colors.text, fontSize: 27, fontWeight: '700', marginVertical: 8, includeFontPadding: false },
   label: { color: colors.label, fontSize: 10, letterSpacing: 2 },
