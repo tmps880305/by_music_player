@@ -11,6 +11,8 @@
 - app/app.json：App 名稱及原生設定。
 - app/package.json：相依套件及可執行指令。
 - README-MAC.md：在 Mac 建置並安裝到 iPhone 的說明。
+- store/app-review-notes.txt：App Store Connect「審查備註」的內容，送審時整份貼上；App 操作流程改變時要同步更新。
+- docs/：GitHub Pages 公開的支援頁、隱私權政策與測試音檔。
 
 ## 啟動
 在 app 目錄執行（Windows 請改用 npm.cmd）：

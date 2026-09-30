@@ -1,0 +1,16 @@
+Baiyen Music Player is an offline, on-device player for MP3 files that the user imports. No account or sign-in is required, and the app makes no network requests.
+
+The user interface is in Traditional Chinese. Labels used below:
+加入範例歌曲 = Add sample songs | 匯入 MP3 = Import MP3
+音樂庫 = Library | 播放清單 = Playlists | 建立清單 = Create playlist
+編輯 = Edit | 加入／移除歌曲 = Add/remove songs | 完成 = Done
+Playback controls at the bottom are icons: previous, play/pause, next.
+
+HOW TO TEST
+1. On first launch the library is empty. Tap 加入範例歌曲 (Add sample songs) to add two bundled royalty-free test tones. You can also import your own MP3 files with 匯入 MP3 (Import MP3) from the Files app; multiple selection is supported.
+2. Tap a song title to start playback. Drag the progress bar to seek, and use the previous/next icons to switch tracks. Pressing previous more than 5 seconds into a song restarts it.
+3. Background audio: while a song is playing, lock the device or switch to another app. Playback continues, and the song can be paused and resumed from the Lock Screen. The app declares the "audio" background mode only for this purpose.
+4. Playlists: tap 播放清單 (Playlists), enter a name and tap 建立清單 (Create playlist); the new playlist opens. Tap 編輯 (Edit), then 加入／移除歌曲 (Add/remove songs), select songs and tap 完成 (Done). Tap 完成 (Done) again to leave edit mode, then tap a song to play the playlist in order from that song.
+
+PRIVACY
+The app collects no data. Imported files and playlist information are stored only in the app's container on the device. The app does not use encryption beyond what iOS provides.
