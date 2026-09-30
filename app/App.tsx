@@ -9,6 +9,7 @@ import { toggleTrack, type Track } from './src/model';
 import { colors, s } from './src/theme';
 import { useLibrary } from './src/useLibrary';
 import Button from './src/components/Button';
+import FadingNotice from './src/components/FadingNotice';
 import IconButton from './src/components/IconButton';
 import Player, { type PlayerHandle } from './src/components/Player';
 import PlaylistEditor from './src/components/PlaylistEditor';
@@ -133,7 +134,8 @@ function Main() {
           </View>
         </>}
         {!!error && <Text accessibilityRole="alert" style={s.error}>{error}</Text>}
-        {!!notice && <Text style={s.muted}>{notice}</Text>}
+        {/* Success notices fade after 3s; warnings (partial failures) stay 8s so failed file names can be read. */}
+        {notice && <FadingNotice key={notice.id} text={notice.text} holdMs={notice.warning ? 8000 : 3000} />}
       </View>
 
       {!loaded ? (

@@ -13,7 +13,11 @@ export function useLibrary() {
   const [loaded, setLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
+  // Status message after an operation. `warning` notices (something partly failed) stay on screen longer; `id` lets the
+  // UI restart its fade-out even when the same text repeats.
+  const [notice, setNoticeState] = useState<{ text: string; warning: boolean; id: number } | null>(null);
+  const noticeId = useRef(0);
+  const setNotice = (text: string, warning = false) => setNoticeState(text ? { text, warning, id: ++noticeId.current } : null);
 
   async function load() {
     try { const value = await loadLibrary(); current.current = value; setData(value); setLoaded(true); setError(''); }
@@ -48,15 +52,15 @@ export function useLibrary() {
     const result = await DocumentPicker.getDocumentAsync({ type: ['audio/mpeg', 'audio/mp3'], multiple: true, copyToCacheDirectory: true });
     if (result.canceled) return;
     const { count, failures } = await addAssets(result.assets);
-    setNotice(`已匯入 ${count} 首${failures}`);
+    setNotice(`已匯入 ${count} 首${failures}`, !!failures);
   });
   const addSamples = () => run(async () => {
     const { count, failures } = await addAssets(await sampleAssets());
-    setNotice(`已加入 ${count} 首範例歌曲${failures}`);
+    setNotice(`已加入 ${count} 首範例歌曲${failures}`, !!failures);
   });
   const deleteTrack = (track: Track) => run(async () => {
     await commit(removeTrack(current.current, track.id));
-    try { await deleteTrackFile(track); } catch { setNotice('歌曲已移除，但無法清理儲存副本。'); }
+    try { await deleteTrackFile(track); } catch { setNotice('歌曲已移除，但無法清理儲存副本。', true); }
     return true;
   });
   const createPlaylist = (name: string) => run(async () => {
