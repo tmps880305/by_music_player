@@ -8,13 +8,21 @@ export function removeTrack(data: Library, id: string): Library {
 export function toggleTrack(playlist: Playlist, id: string): Playlist {
   return { ...playlist, trackIds: playlist.trackIds.includes(id) ? playlist.trackIds.filter(t => t !== id) : [...playlist.trackIds, id] };
 }
-// Moves the song at `from` to position `to`, shifting the songs in between (drag-and-drop order).
+// Moves the item at `from` to position `to`, shifting the items in between (drag-and-drop order); null if nothing moves.
+function moveItem<T>(items: T[], from: number, to: number): T[] | null {
+  if (from === to || from < 0 || from >= items.length || to < 0 || to >= items.length) return null;
+  const next = [...items];
+  const [item] = next.splice(from, 1);
+  next.splice(to, 0, item);
+  return next;
+}
 export function reorderTrack(playlist: Playlist, from: number, to: number): Playlist {
-  const ids = [...playlist.trackIds];
-  if (from === to || from < 0 || from >= ids.length || to < 0 || to >= ids.length) return playlist;
-  const [id] = ids.splice(from, 1);
-  ids.splice(to, 0, id);
-  return { ...playlist, trackIds: ids };
+  const ids = moveItem(playlist.trackIds, from, to);
+  return ids ? { ...playlist, trackIds: ids } : playlist;
+}
+export function reorderPlaylists(data: Library, from: number, to: number): Library {
+  const playlists = moveItem(data.playlists, from, to);
+  return playlists ? { ...data, playlists } : data;
 }
 export function parseLibrary(raw: string): Library {
   const data = JSON.parse(raw);

@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { removeTrack, toggleTrack, reorderTrack, parseLibrary } = require('../src/model.ts');
+const { removeTrack, toggleTrack, reorderTrack, reorderPlaylists, parseLibrary } = require('../src/model.ts');
 const library = () => ({ version: 1, tracks: ['a', 'b'].map(id => ({ id, name: id, fileName: id + '.mp3', size: 100 })), playlists: [{ id: 'p', name: '清單', trackIds: ['a', 'b'] }, { id: 'q', name: '另一份', trackIds: ['a'] }] });
 test('deleting a library track removes all playlist references without mutating input', () => {
  const original = library(); const result = removeTrack(original, 'a');
@@ -21,6 +21,13 @@ test('reordering moves a song and shifts the ones in between', () => {
  assert.deepEqual(reorderTrack(p, -1, 2).trackIds, ['a', 'b', 'c', 'd']);
  assert.deepEqual(reorderTrack(p, 0, 4).trackIds, ['a', 'b', 'c', 'd']);
  assert.deepEqual(p.trackIds, ['a', 'b', 'c', 'd']);
+});
+test('playlists reorder without touching their songs or the input', () => {
+ const original = library(); const result = reorderPlaylists(original, 1, 0);
+ assert.deepEqual(result.playlists.map(p => p.id), ['q', 'p']);
+ assert.deepEqual(result.playlists.map(p => p.trackIds), [['a'], ['a', 'b']]);
+ assert.equal(reorderPlaylists(original, 0, 5), original);
+ assert.deepEqual(original.playlists.map(p => p.id), ['p', 'q']);
 });
 test('library round trip preserves playlist order', () => {
  const data = library(); data.playlists[0] = reorderTrack(data.playlists[0], 0, 1);

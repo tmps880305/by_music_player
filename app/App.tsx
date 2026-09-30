@@ -142,7 +142,8 @@ function Main() {
           {error ? <Button title="重新載入" onPress={() => void library.load()} /> : <ActivityIndicator color={colors.accent} />}
         </View>
       ) : tab === 'playlists' && !playlist ? (
-        <PlaylistList playlists={data.playlists} busy={busy} name={name} onNameChange={setName} onCreate={() => void createPlaylist()} onOpen={openPlaylist} onRename={p => setRenamingId(p.id)} onDelete={p => deletePlaylist(p.id)} />
+        <PlaylistList playlists={data.playlists} busy={busy} name={name} onNameChange={setName} onCreate={() => void createPlaylist()} onOpen={openPlaylist} onRename={p => setRenamingId(p.id)} onDelete={p => deletePlaylist(p.id)}
+          onReorder={(from, to) => void library.movePlaylist(from, to)} />
       ) : <>
         <View style={s.header}>
           {playlist ? <>

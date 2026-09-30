@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as DocumentPicker from 'expo-document-picker';
 import type { DocumentPickerAsset } from 'expo-document-picker';
-import { emptyLibrary, removeTrack, reorderTrack, type Library, type Playlist, type Track } from './model';
+import { emptyLibrary, removeTrack, reorderPlaylists, reorderTrack, type Library, type Playlist, type Track } from './model';
 import { copyTrack, deleteTrackFile, loadLibrary, newId, saveLibrary } from './storage';
 import { sampleAssets } from './samples';
 
@@ -71,10 +71,13 @@ export function useLibrary() {
   const reorderPlaylist = (id: string, from: number, to: number) => run(async () => {
     await commitOptimistic({ ...current.current, playlists: current.current.playlists.map(p => p.id === id ? reorderTrack(p, from, to) : p) });
   });
+  const movePlaylist = (from: number, to: number) => run(async () => {
+    await commitOptimistic(reorderPlaylists(current.current, from, to));
+  });
   const deletePlaylist = (id: string) => run(async () => {
     await commit({ ...current.current, playlists: current.current.playlists.filter(p => p.id !== id) });
     return true;
   });
 
-  return { data, loaded, busy, error, notice, load, importFiles, addSamples, deleteTrack, createPlaylist, updatePlaylist, reorderPlaylist, deletePlaylist };
+  return { data, loaded, busy, error, notice, load, importFiles, addSamples, deleteTrack, createPlaylist, updatePlaylist, reorderPlaylist, movePlaylist, deletePlaylist };
 }

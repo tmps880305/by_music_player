@@ -1,8 +1,8 @@
 import type { ReactElement } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
-import ReorderableList, { useReorderableDrag } from 'react-native-reorderable-list';
+import ReorderableList from 'react-native-reorderable-list';
 import type { Playlist, Track } from '../model';
-import { useTouchDragGuard } from '../useTouchDragGuard';
+import { useLongPressDrag } from '../useLongPressDrag';
 import { colors, s } from '../theme';
 import Button from './Button';
 import IconButton from './IconButton';
@@ -37,15 +37,10 @@ function TrackCard({ track, active, busy, inPlaylist, onPlay, onTrash, onLongPre
   );
 }
 
-// useReorderableDrag only works inside a ReorderableList cell, so the playlist card is its own component.
+// The drag hook only works inside a ReorderableList cell, so the playlist card is its own component.
 function DraggableTrackCard(props: Omit<CardProps, 'onLongPress'> & { dragEnabled: boolean }) {
-  const drag = useReorderableDrag();
-  const guard = useTouchDragGuard();
-  return (
-    <View ref={guard.ref}>
-      <TrackCard {...props} onLongPress={props.dragEnabled ? () => { guard.arm(); drag(); } : undefined} />
-    </View>
-  );
+  const drag = useLongPressDrag(props.dragEnabled);
+  return <View ref={drag.ref}><TrackCard {...props} onLongPress={drag.onLongPress} /></View>;
 }
 
 export default function TrackList({ tracks, playlist, activeId, busy, emptyText, emptyAction, onPlay, onReorder, onRemove, onDelete }: Props) {
