@@ -16,8 +16,8 @@ const ICON_BOTTOM = '#CFE6F2';
 const useNative = Platform.OS !== 'web';
 
 // Opening intro over the app: the app icon's light gradient, the blue "ByPlayer" wordmark rising into the centre,
-// then a flickering "lights off" into the app's dark background, and a fade that reveals the app underneath.
-// With Reduce Motion it skips the rise and flicker. Calls onDone when finished.
+// then the lights dim smoothly into the app's dark background, and a fade reveals the app underneath.
+// With Reduce Motion it skips the rise. Calls onDone when finished.
 export default function SplashIntro({ onDone }: { onDone: () => void }) {
   const gradient = useRef(new Animated.Value(0)).current;
   const wordmark = useRef(new Animated.Value(0)).current;
@@ -32,10 +32,8 @@ export default function SplashIntro({ onDone }: { onDone: () => void }) {
     let cancelled = false;
     AccessibilityInfo.isReduceMotionEnabled().catch(() => false).then(reduce => {
       if (cancelled) return;
-      const lightsOff = reduce
-        ? to(dark, 1, 400)
-        // A failing fluorescent tube: two quick dips and recoveries, then off.
-        : Animated.sequence([to(dark, 0.55, 90), to(dark, 0.15, 110), to(dark, 0.8, 80), to(dark, 0.45, 120), to(dark, 1, 380, Easing.in(Easing.quad))]);
+      // Lights off like a dimmer: one smooth, continuous fade to dark.
+      const lightsOff = to(dark, 1, 900, Easing.inOut(Easing.sin));
       intro = Animated.sequence([
         Animated.parallel([
           to(gradient, 1, 250),
