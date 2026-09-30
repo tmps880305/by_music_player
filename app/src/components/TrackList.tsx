@@ -5,8 +5,9 @@ import Button from './Button';
 
 type Props = {
   tracks: Track[];
-  // Set when showing a playlist: rows get reorder/remove actions instead of delete.
+  // Set when showing a playlist: rows have no actions, or reorder/remove actions while editing.
   playlist?: Playlist;
+  editing?: boolean;
   activeId: string | null;
   busy: boolean;
   emptyText: string;
@@ -16,7 +17,7 @@ type Props = {
   onDelete: (track: Track) => void;
 };
 
-export default function TrackList({ tracks, playlist, activeId, busy, emptyText, onPlay, onMove, onRemove, onDelete }: Props) {
+export default function TrackList({ tracks, playlist, editing = false, activeId, busy, emptyText, onPlay, onMove, onRemove, onDelete }: Props) {
   return (
     <FlatList data={tracks} keyExtractor={t => t.id} contentContainerStyle={s.list}
       ListEmptyComponent={<Text style={s.muted}>{emptyText}</Text>}
@@ -28,13 +29,15 @@ export default function TrackList({ tracks, playlist, activeId, busy, emptyText,
               <Text style={s.title}>{item.name}</Text>
               <Text style={s.muted}>{(item.size / 1024 / 1024).toFixed(1)} MB{item.id === activeId ? ' · 已選取' : ' · 點選播放'}</Text>
             </Pressable>
-            <View style={s.row}>
-              {playlist ? <>
+            {playlist ? editing && (
+              <View style={s.row}>
                 <Button title="上移" disabled={busy || index === 0} onPress={() => onMove(item, -1)} />
                 <Button title="下移" disabled={busy || index === playlist.trackIds.length - 1} onPress={() => onMove(item, 1)} />
                 <Button title="移出清單" disabled={busy} onPress={() => onRemove(item)} />
-              </> : <Button title="刪除歌曲" danger disabled={busy} onPress={() => onDelete(item)} />}
-            </View>
+              </View>
+            ) : (
+              <View style={s.row}><Button title="刪除歌曲" danger disabled={busy} onPress={() => onDelete(item)} /></View>
+            )}
           </View>
         );
       }} />

@@ -1,24 +1,21 @@
 import { TextInput, View } from 'react-native';
-import type { Playlist } from '../model';
 import { colors, s } from '../theme';
 import Button from './Button';
 
+// Editing tools shown under "編輯" on a playlist page.
 type Props = {
-  playlist: Playlist;
   busy: boolean;
   name: string;
   onNameChange: (name: string) => void;
-  onEdit: () => void;
-  onPlayAll: () => void;
+  onPick: () => void;
   onRename: () => void;
 };
 
-export default function PlaylistToolbar({ playlist, busy, name, onNameChange, onEdit, onPlayAll, onRename }: Props) {
+export default function PlaylistToolbar({ busy, name, onNameChange, onPick, onRename }: Props) {
   return (
     <>
       <View style={s.row}>
-        <Button title="加入／移除歌曲" disabled={busy} onPress={onEdit} />
-        <Button title="依序播放" disabled={!playlist.trackIds.length} onPress={onPlayAll} />
+        <Button title="加入／移除歌曲" disabled={busy} onPress={onPick} />
       </View>
       <View style={s.row}>
         <TextInput style={[s.input, { flex: 1 }]} accessibilityLabel="重新命名清單" placeholder="輸入新名稱" placeholderTextColor={colors.placeholder} value={name} maxLength={60} onChangeText={onNameChange} />

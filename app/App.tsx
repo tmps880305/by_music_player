@@ -27,13 +27,15 @@ function Main() {
   const [tab, setTab] = useState<'library' | 'playlists'>('library');
   const [search, setSearch] = useState('');
   const [playlistId, setPlaylistId] = useState<string | null>(null);
-  const [editing, setEditing] = useState(false);
+  // editMode reveals the playlist's editing tools; picking shows the add/remove songs sheet.
+  const [editMode, setEditMode] = useState(false);
+  const [picking, setPicking] = useState(false);
   const [name, setName] = useState('');
   const [active, setActive] = useState<string | null>(null);
   const [queue, setQueue] = useState<string[]>([]);
   const playlist = data.playlists.find(p => p.id === playlistId);
 
-  function openPlaylist(id: string | null) { setPlaylistId(id); setSearch(''); setName(''); }
+  function openPlaylist(id: string | null) { setPlaylistId(id); setSearch(''); setName(''); setEditMode(false); }
   // Android back button/gesture: leave the open playlist instead of exiting the app.
   useEffect(() => {
     if (!playlistId) return;
@@ -72,7 +74,9 @@ function Main() {
   const listed = playlist ? playlist.trackIds.map(id => data.tracks.find(t => t.id === id)).filter((t): t is Track => !!t) : sortedTracks;
   const visible = listed.filter(t => t.name.toLowerCase().includes(search.toLowerCase()));
   const selected = data.tracks.find(t => t.id === active) ?? null;
-  const emptyText = search ? '找不到符合的歌曲。' : playlist ? '清單還沒有歌曲，點選「加入／移除歌曲」。' : '點選「匯入 MP3」，從裝置選擇音樂檔案。';
+  const emptyText = search ? '找不到符合的歌曲。'
+    : playlist ? (editMode ? '清單還沒有歌曲，點選「加入／移除歌曲」。' : '清單還沒有歌曲，點選「編輯」加入歌曲。')
+    : '點選「匯入 MP3」，從裝置選擇音樂檔案。';
 
   // The bottom inset is applied inside Player so its background reaches the screen edge.
   return (
@@ -105,15 +109,19 @@ function Main() {
         <PlaylistList playlists={data.playlists} busy={busy} name={name} onNameChange={setName} onCreate={() => void createPlaylist()} onOpen={openPlaylist} onDelete={p => deletePlaylist(p.id)} />
       ) : <>
         <View style={s.header}>
-          {playlist
-            ? <PlaylistToolbar playlist={playlist} busy={busy} name={name} onNameChange={setName}
-                onEdit={() => setEditing(true)}
-                onPlayAll={() => choose(data.tracks.find(t => t.id === playlist.trackIds[0])!, playlist.trackIds)}
-                onRename={() => { changePlaylist(p => ({ ...p, name: name.trim() })); setName(''); }} />
-            : <Text style={s.muted}>依名稱排序 · 由小到大</Text>}
-          <TextInput accessibilityLabel="搜尋歌曲" style={s.input} placeholder="搜尋歌曲名稱" placeholderTextColor={colors.placeholder} value={search} onChangeText={setSearch} />
+          {playlist ? <>
+            <View style={s.primaryAction}>
+              <Button title={editMode ? '完成編輯' : '編輯'} filled compact onPress={() => { setEditMode(!editMode); setName(''); }} />
+            </View>
+            {editMode && <PlaylistToolbar busy={busy} name={name} onNameChange={setName}
+              onPick={() => setPicking(true)}
+              onRename={() => { changePlaylist(p => ({ ...p, name: name.trim() })); setName(''); }} />}
+          </> : <>
+            <Text style={s.muted}>依名稱排序 · 由小到大</Text>
+            <TextInput accessibilityLabel="搜尋歌曲" style={s.input} placeholder="搜尋歌曲名稱" placeholderTextColor={colors.placeholder} value={search} onChangeText={setSearch} />
+          </>}
         </View>
-        <TrackList tracks={visible} playlist={playlist} activeId={active} busy={busy} emptyText={emptyText}
+        <TrackList tracks={visible} playlist={playlist} editing={editMode} activeId={active} busy={busy} emptyText={emptyText}
           onPlay={track => choose(track, playlist ? playlist.trackIds : visible.map(t => t.id))}
           onMove={(track, direction) => changePlaylist(p => moveTrack(p, p.trackIds.indexOf(track.id), direction))}
           onRemove={track => changePlaylist(p => ({ ...p, trackIds: p.trackIds.filter(id => id !== track.id) }))}
@@ -123,8 +131,8 @@ function Main() {
       <Player track={selected}
         previous={position > 0 ? () => setActive(validQueue[position - 1]) : undefined}
         next={position >= 0 && position < validQueue.length - 1 ? () => setActive(validQueue[position + 1]) : undefined} />
-      <PlaylistEditor visible={editing && !!playlist} tracks={sortedTracks} selectedIds={playlist?.trackIds ?? []} busy={busy} error={error}
-        onToggle={track => changePlaylist(p => toggleTrack(p, track.id))} onClose={() => setEditing(false)} />
+      <PlaylistEditor visible={picking && !!playlist} tracks={sortedTracks} selectedIds={playlist?.trackIds ?? []} busy={busy} error={error}
+        onToggle={track => changePlaylist(p => toggleTrack(p, track.id))} onClose={() => setPicking(false)} />
     </SafeAreaView>
   );
 }

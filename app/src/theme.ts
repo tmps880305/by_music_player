@@ -27,6 +27,8 @@ export const s = StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' },
   button: { paddingVertical: 12, paddingHorizontal: 10, minHeight: 44 },
   filledButton: { backgroundColor: colors.accent, borderRadius: 10, paddingHorizontal: 16, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
+  primaryAction: { alignSelf: 'flex-start', marginVertical: 6 },
+  compactButton: { minHeight: 38, paddingHorizontal: 16, borderRadius: 9 },
   inputRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   iconButton: { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   controls: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 28, paddingVertical: 4 },
