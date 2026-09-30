@@ -26,6 +26,7 @@ export const s = StyleSheet.create({
   muted: { color: colors.muted, fontSize: 12, marginTop: 5 },
   row: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' },
   button: { paddingVertical: 12, paddingHorizontal: 10, minHeight: 44 },
+  outlineButton: { borderWidth: 1.5, borderColor: colors.accent, borderRadius: 10, paddingHorizontal: 16, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   filledButton: { backgroundColor: colors.accent, borderRadius: 10, paddingHorizontal: 16, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   primaryAction: { alignSelf: 'flex-start', marginVertical: 6 },
   actionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginVertical: 6 },

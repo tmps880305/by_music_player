@@ -50,7 +50,7 @@ export default function TrackList({ tracks, playlist, activeId, busy, emptyText,
   // With coach hints, the empty view reserves room for them below the button.
   const empty = <View style={emptyAction?.coach ? s.coachArea : undefined}>
     {!emptyAction?.coach && <Text style={s.muted}>{emptyText}</Text>}
-    {emptyAction && <View style={s.primaryAction}><Button title={emptyAction.title} filled compact disabled={busy} onPress={emptyAction.onPress} /></View>}
+    {emptyAction && <View style={s.primaryAction}><Button title={emptyAction.title} outline compact disabled={busy} onPress={emptyAction.onPress} /></View>}
     {emptyAction?.coach && <View style={s.coachLayer}>
       <CoachHint text={emptyAction.coach.toImport} arrow={loopUpArrow} arrowStyle={s.coachArrowToImport} textStyle={s.coachTextToImport} />
       <CoachHint text={emptyAction.coach.toAction} arrow={riseLeftArrow} arrowStyle={s.coachArrowToAction} textStyle={s.coachTextToAction} />
