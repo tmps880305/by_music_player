@@ -5,6 +5,7 @@ import type { Playlist, Track } from '../model';
 import { useLongPressDrag } from '../useLongPressDrag';
 import { colors, s } from '../theme';
 import Button from './Button';
+import CoachBubble from './CoachBubble';
 import IconButton from './IconButton';
 
 type Props = {
@@ -14,8 +15,8 @@ type Props = {
   activeId: string | null;
   busy: boolean;
   emptyText: string;
-  // Optional button under the empty-state text.
-  emptyAction?: { title: string; onPress: () => void };
+  // Optional button under the empty-state text. With `coach`, an onboarding bubble replaces the text and points at it.
+  emptyAction?: { title: string; onPress: () => void; coach?: string };
   onPlay: (track: Track) => void;
   onReorder: (from: number, to: number) => void;
   onRemove: (track: Track) => void;
@@ -45,9 +46,11 @@ function DraggableTrackCard(props: Omit<CardProps, 'onLongPress'> & { dragEnable
 
 export default function TrackList({ tracks, playlist, activeId, busy, emptyText, emptyAction, onPlay, onReorder, onRemove, onDelete }: Props) {
   // A View, not a fragment: ReorderableList passes onLayout to the empty component.
-  const empty = <View>
-    <Text style={s.muted}>{emptyText}</Text>
+  // With a coach hint, the empty view reserves room for the hint in its top-right corner.
+  const empty = <View style={emptyAction?.coach ? s.coachArea : undefined}>
+    {!emptyAction?.coach && <Text style={s.muted}>{emptyText}</Text>}
     {emptyAction && <View style={s.primaryAction}><Button title={emptyAction.title} filled compact disabled={busy} onPress={emptyAction.onPress} /></View>}
+    {emptyAction?.coach && <CoachBubble text={emptyAction.coach} />}
   </View>;
   const card = (track: Track): Omit<CardProps, 'onLongPress'> => ({
     track, active: track.id === activeId, busy, inPlaylist: !!playlist,

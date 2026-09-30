@@ -34,6 +34,11 @@ export const s = StyleSheet.create({
   leadingIcon: { marginLeft: -4 },
   iconRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   compactButton: { minHeight: 38, paddingHorizontal: 16, borderRadius: 9 },
+  // Onboarding hint (see CoachBubble): looping arrow up to the + button, with text below it at the top-right.
+  coachArea: { minHeight: 100 },
+  coachLayer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none' },
+  coachArrow: { position: 'absolute', top: 0, right: 0 },
+  coachText: { position: 'absolute', top: 70, right: 0, color: colors.accent, fontSize: 14, fontWeight: '600' },
   dialogBackdrop: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.6)', justifyContent: 'center', padding: 24 },
   dialog: { backgroundColor: colors.surface, borderRadius: 16, padding: 18, gap: 8 },
   dialogActions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 8, marginTop: 4 },
