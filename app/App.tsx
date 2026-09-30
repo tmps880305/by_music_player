@@ -161,7 +161,7 @@ function Main() {
               </View>
             </View>
           </> : <>
-            <Text style={s.muted}>依名稱排序 · 由小到大</Text>
+            <Text style={[s.muted, { marginBottom: 6 }]}>依名稱排序 · 由小到大</Text>
             <View style={s.inputRow}>
               <TextInput accessibilityLabel="搜尋歌曲" style={[s.input, { flex: 1 }]} placeholder="搜尋歌曲名稱" placeholderTextColor={colors.placeholder} value={search} onChangeText={setSearch} />
               {/* Imports MP3s via the file picker; styled like the playlist page's + button. */}

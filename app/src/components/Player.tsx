@@ -116,7 +116,7 @@ export default function Player({ track, next, previous, restartToken = 0, onPlay
   return (
     <View style={[s.player, { paddingBottom: Math.max(insets.bottom, 12) }]}>
       {status.playing && foreground && <PlaybackWakeLock />}
-      <Text style={s.label}>正在播放</Text>
+      <Text style={[s.label, { marginBottom: 6 }]}>正在播放</Text>
       <Text style={s.title} numberOfLines={1}>{track?.name ?? '請從音樂庫選擇歌曲'}</Text>
       <SeekBar value={position} maximum={track && Number.isFinite(status.duration) ? status.duration : 0} disabled={!canPlay || !hasDuration}
         onPreview={setSeekPreview} onCommit={value => void seek(value)} onCancel={() => setSeekPreview(null)} />
