@@ -73,7 +73,7 @@ function Main() {
       <StatusBar style={statusBarStyle} />
       <View style={s.header}>
         <Text style={s.label}>BAIYEN MUSIC PLAYER</Text>
-        <Text style={s.heading}>{playlist ? playlist.name : '我的音樂'}</Text>
+        <Text style={s.heading}>{playlist ? playlist.name : tab === 'playlists' ? '播放清單' : '音樂庫'}</Text>
         <View style={s.row}>
           <Button title={`音樂庫 ${data.tracks.length}`} onPress={() => showTab('library')} />
           <Button title={`播放清單 ${data.playlists.length}`} onPress={() => showTab('playlists')} />
