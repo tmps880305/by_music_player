@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useImperativeHandle, useRef, useState, type Ref } from 'react';
 import { AppState, Text, View } from 'react-native';
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { useKeepAwake } from 'expo-keep-awake';
@@ -21,9 +21,19 @@ function PlaybackWakeLock() {
   return null;
 }
 
-type Props = { track: Track | null; next?: () => void; previous?: () => void };
+// restartToken: bump it to replay the current track from the start even if the track itself didn't change.
+type Props = {
+  track: Track | null;
+  next?: () => void;
+  previous?: () => void;
+  restartToken?: number;
+  onPlayingChange?: (playing: boolean) => void;
+  ref?: Ref<PlayerHandle>;
+};
+// Lets other screens drive the transport: toggle() is the play/pause button; canResume() is false once the song has ended.
+export type PlayerHandle = { toggle: () => void; canResume: () => boolean };
 
-export default function Player({ track, next, previous }: Props) {
+export default function Player({ track, next, previous, restartToken = 0, onPlayingChange, ref }: Props) {
   // One player for the whole session: swapping sources with replace() keeps iOS background playback alive between tracks.
   const player = useAudioPlayer(null, { keepAudioSessionActive: true });
   const status = useAudioPlayerStatus(player);
@@ -35,6 +45,7 @@ export default function Player({ track, next, previous }: Props) {
   const [seekPreview, setSeekPreview] = useState<number | null>(null);
   const seekBusy = useRef(false);
   const loadedId = useRef<string | null>(null);
+  const handledRestart = useRef(restartToken);
   const finished = useRef(false);
 
   useEffect(() => {
@@ -49,18 +60,29 @@ export default function Player({ track, next, previous }: Props) {
     return () => { active = false; };
   }, []);
   useEffect(() => {
-    if (!ready || loadedId.current === (track?.id ?? null)) return;
+    const restart = restartToken !== handledRestart.current;
+    handledRestart.current = restartToken;
+    if (!ready) return;
+    if (loadedId.current === (track?.id ?? null)) {
+      if (restart && track) player.seekTo(0).then(start).catch(() => setError('無法播放此音檔'));
+      return;
+    }
     loadedId.current = track?.id ?? null; setError(''); setSeekPreview(null);
     try {
       if (!track) { player.pause(); player.replace(null); player.clearLockScreenControls(); return; }
       player.replace({ uri: trackUri(track) });
       player.setActiveForLockScreen(true, { title: track.name }); player.play();
     } catch { setError('無法播放此音檔'); }
-  }, [ready, track?.id, player]);
+  }, [ready, track?.id, restartToken, player]);
   useEffect(() => {
     if (status.didJustFinish && !finished.current) { finished.current = true; next?.(); }
     if (status.playing) finished.current = false;
   }, [status.didJustFinish, status.playing, next]);
+  useEffect(() => { onPlayingChange?.(status.playing); }, [status.playing, onPlayingChange]);
+  useImperativeHandle(ref, () => ({
+    toggle: () => void play(),
+    canResume: () => !!track && status.isLoaded && !(status.duration > 0 && status.currentTime >= status.duration),
+  }));
 
   async function seek(value: number) {
     if (!track || !status.isLoaded || !Number.isFinite(status.duration) || status.duration <= 0 || seekBusy.current) return;

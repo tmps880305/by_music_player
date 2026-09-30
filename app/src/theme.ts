@@ -28,6 +28,9 @@ export const s = StyleSheet.create({
   button: { paddingVertical: 12, paddingHorizontal: 10, minHeight: 44 },
   filledButton: { backgroundColor: colors.accent, borderRadius: 10, paddingHorizontal: 16, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   primaryAction: { alignSelf: 'flex-start', marginVertical: 6 },
+  actionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginVertical: 6 },
+  // Lines a trailing icon's glyph up with the content's right edge despite its 44pt tap target.
+  trailingIcon: { marginRight: -4 },
   compactButton: { minHeight: 38, paddingHorizontal: 16, borderRadius: 9 },
   inputRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   iconButton: { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },

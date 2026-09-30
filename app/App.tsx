@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, BackHandler, Text, TextInput, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -9,7 +9,7 @@ import { colors, s } from './src/theme';
 import { useLibrary } from './src/useLibrary';
 import Button from './src/components/Button';
 import IconButton from './src/components/IconButton';
-import Player from './src/components/Player';
+import Player, { type PlayerHandle } from './src/components/Player';
 import PlaylistEditor from './src/components/PlaylistEditor';
 import PlaylistList from './src/components/PlaylistList';
 import PlaylistToolbar from './src/components/PlaylistToolbar';
@@ -33,6 +33,11 @@ function Main() {
   const [name, setName] = useState('');
   const [active, setActive] = useState<string | null>(null);
   const [queue, setQueue] = useState<string[]>([]);
+  const [restartToken, setRestartToken] = useState(0);
+  // Playlist the queue came from (null = library), so a playlist page knows whether it owns current playback.
+  const [queueSource, setQueueSource] = useState<string | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const player = useRef<PlayerHandle>(null);
   const playlist = data.playlists.find(p => p.id === playlistId);
 
   function openPlaylist(id: string | null) { setPlaylistId(id); setSearch(''); setName(''); setEditMode(false); }
@@ -43,7 +48,18 @@ function Main() {
     return () => subscription.remove();
   }, [playlistId]);
   function showTab(next: typeof tab) { setTab(next); openPlaylist(null); }
-  function choose(track: Track, ids: string[]) { setQueue(ids); setActive(track.id); }
+  // restart: replay from the beginning even if this track is already the current one.
+  function choose(track: Track, ids: string[], source: string | null, restart = false) {
+    setQueue(ids); setQueueSource(source); setActive(track.id);
+    if (restart) setRestartToken(n => n + 1);
+  }
+  // Playlist play/pause icon: pauses or resumes this playlist's playback, otherwise starts it from the first song.
+  function playPlaylist() {
+    if (!playlist || !listed.length) return;
+    const owns = queueSource === playlist.id && !!active && playlist.trackIds.includes(active);
+    if (owns && (playing || player.current?.canResume())) player.current?.toggle();
+    else choose(listed[0], playlist.trackIds, playlist.id, true);
+  }
   function deleteSong(track: Track) {
     Alert.alert('刪除歌曲？', `「${track.name}」將從音樂庫與所有播放清單移除，原始檔案不受影響。`, [
       { text: '取消', style: 'cancel' },
@@ -74,6 +90,7 @@ function Main() {
   const listed = playlist ? playlist.trackIds.map(id => data.tracks.find(t => t.id === id)).filter((t): t is Track => !!t) : sortedTracks;
   const visible = listed.filter(t => t.name.toLowerCase().includes(search.toLowerCase()));
   const selected = data.tracks.find(t => t.id === active) ?? null;
+  const playlistPlaying = !!playlist && playing && queueSource === playlist.id;
   const emptyText = search ? '找不到符合的歌曲。'
     : playlist ? (editMode ? '清單還沒有歌曲，點選「加入／移除歌曲」。' : '清單還沒有歌曲，點選「編輯」加入歌曲。')
     : '點選「匯入 MP3」從裝置選擇音樂檔案，或先加入範例歌曲試聽。';
@@ -111,8 +128,12 @@ function Main() {
       ) : <>
         <View style={s.header}>
           {playlist ? <>
-            <View style={s.primaryAction}>
+            <View style={s.actionRow}>
               <Button title={editMode ? '完成' : '編輯'} filled compact onPress={() => { setEditMode(!editMode); setName(''); }} />
+              {!editMode && <View style={s.trailingIcon}>
+                {/* The circle glyph is 0.81em tall, so size 47 matches the 38pt edit button. */}
+                <IconButton icon={playlistPlaying ? 'pause-circle' : 'play-circle'} label={playlistPlaying ? '暫停播放清單' : '播放清單'} size={47} disabled={!listed.length} onPress={playPlaylist} />
+              </View>}
             </View>
             {editMode && <PlaylistToolbar busy={busy} name={name} onNameChange={setName}
               onPick={() => setPicking(true)}
@@ -123,13 +144,13 @@ function Main() {
           </>}
         </View>
         <TrackList tracks={visible} playlist={playlist} editing={editMode} activeId={active} busy={busy} emptyText={emptyText} emptyAction={emptyAction}
-          onPlay={track => choose(track, playlist ? playlist.trackIds : visible.map(t => t.id))}
+          onPlay={track => choose(track, playlist ? playlist.trackIds : visible.map(t => t.id), playlist?.id ?? null)}
           onMove={(track, direction) => changePlaylist(p => moveTrack(p, p.trackIds.indexOf(track.id), direction))}
           onRemove={track => changePlaylist(p => ({ ...p, trackIds: p.trackIds.filter(id => id !== track.id) }))}
           onDelete={deleteSong} />
       </>}
 
-      <Player track={selected}
+      <Player ref={player} track={selected} restartToken={restartToken} onPlayingChange={setPlaying}
         previous={position > 0 ? () => setActive(validQueue[position - 1]) : undefined}
         next={position >= 0 && position < validQueue.length - 1 ? () => setActive(validQueue[position + 1]) : undefined} />
       <PlaylistEditor visible={picking && !!playlist} tracks={sortedTracks} selectedIds={playlist?.trackIds ?? []} busy={busy} error={error}
