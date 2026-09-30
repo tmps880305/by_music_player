@@ -111,7 +111,7 @@ function Main() {
         <View style={s.header}>
           {playlist ? <>
             <View style={s.primaryAction}>
-              <Button title={editMode ? '完成編輯' : '編輯'} filled compact onPress={() => { setEditMode(!editMode); setName(''); }} />
+              <Button title={editMode ? '完成' : '編輯'} filled compact onPress={() => { setEditMode(!editMode); setName(''); }} />
             </View>
             {editMode && <PlaylistToolbar busy={busy} name={name} onNameChange={setName}
               onPick={() => setPicking(true)}
