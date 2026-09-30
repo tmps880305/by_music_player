@@ -6,7 +6,9 @@ import SeekBar from '../SeekBar';
 import { trackUri } from '../storage';
 import type { Track } from '../model';
 import { s } from '../theme';
-import Button from './Button';
+import IconButton from './IconButton';
+
+const RESTART_THRESHOLD = 5;
 
 function time(value: number) {
   const n = Math.max(0, Math.floor(value || 0));
@@ -78,6 +80,11 @@ export default function Player({ track, next, previous }: Props) {
     } catch { setError('無法播放此音檔'); }
     finally { setSeeking(false); }
   }
+  // Like most players: past the first few seconds, "previous" restarts the current song instead of skipping back.
+  async function back() {
+    if (canPlay && (status.currentTime > RESTART_THRESHOLD || !previous)) await play(true);
+    else previous?.();
+  }
 
   const canPlay = !!track && ready && status.isLoaded && !seeking;
   const hasDuration = Number.isFinite(status.duration) && status.duration > 0;
@@ -90,11 +97,10 @@ export default function Player({ track, next, previous }: Props) {
       <SeekBar value={position} maximum={track && Number.isFinite(status.duration) ? status.duration : 0} disabled={!canPlay || !hasDuration}
         onPreview={setSeekPreview} onCommit={value => void seek(value)} onCancel={() => setSeekPreview(null)} />
       <Text style={s.muted}>{time(position)} / {time(track ? status.duration : 0)}{!track ? '' : !status.isLoaded ? ' · 載入中' : ''}</Text>
-      <View style={s.row}>
-        <Button title="上一首" onPress={() => previous?.()} disabled={!previous} />
-        <Button title={status.playing ? '暫停' : '播放'} onPress={() => void play()} disabled={!canPlay} />
-        <Button title="下一首" onPress={() => next?.()} disabled={!next} />
-        <Button title="重播" onPress={() => void play(true)} disabled={!canPlay} />
+      <View style={s.controls}>
+        <IconButton icon="play-skip-back" label="上一首" onPress={() => void back()} disabled={!canPlay && !previous} />
+        <IconButton icon={status.playing ? 'pause' : 'play'} label={status.playing ? '暫停' : '播放'} size={40} onPress={() => void play()} disabled={!canPlay} />
+        <IconButton icon="play-skip-forward" label="下一首" onPress={() => next?.()} disabled={!next} />
       </View>
       {!!(error || status.error) && <Text accessibilityRole="alert" style={s.error}>{error || status.error}</Text>}
     </View>

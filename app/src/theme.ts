@@ -21,6 +21,8 @@ export const s = StyleSheet.create({
   muted: { color: colors.muted, fontSize: 12, marginTop: 5 },
   row: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' },
   button: { paddingVertical: 12, paddingHorizontal: 10, minHeight: 44 },
+  iconButton: { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
+  controls: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 28, paddingVertical: 4 },
   input: { borderColor: colors.border, borderWidth: 1, borderRadius: 10, padding: 12, color: colors.text, marginVertical: 5, minHeight: 44 },
   list: { padding: 18, paddingBottom: 12 },
   item: { backgroundColor: colors.surface, padding: 14, borderRadius: 14, marginBottom: 10 },
