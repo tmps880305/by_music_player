@@ -38,28 +38,37 @@ function Main() {
   const [restartToken, setRestartToken] = useState(0);
   // Playlist the queue came from (null = library), so a playlist page knows whether it owns current playback.
   const [queueSource, setQueueSource] = useState<string | null>(null);
+  // Playlist whose paused song the play icon may resume. Cleared when leaving a playlist page, so the next visit starts from the top.
+  const [resumePlaylist, setResumePlaylist] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
   const player = useRef<PlayerHandle>(null);
   const playlist = data.playlists.find(p => p.id === playlistId);
 
-  function openPlaylist(id: string | null) { setPlaylistId(id); setSearch(''); setName(''); setEditMode(false); }
-  // Android back button/gesture: leave the open playlist instead of exiting the app.
+  function openPlaylist(id: string | null) {
+    // Leaving a playlist whose song is paused resets playback, so the next visit starts with nothing selected.
+    if (playlistId && queueSource === playlistId && !playing) { setActive(null); setQueue([]); setQueueSource(null); }
+    setPlaylistId(id); setSearch(''); setName(''); setEditMode(false); setResumePlaylist(null);
+  }
+  // Android back button/gesture: leave the open playlist instead of exiting the app. The ref keeps the handler
+  // calling the latest openPlaylist, which reads current playback state.
+  const openPlaylistRef = useRef(openPlaylist);
+  openPlaylistRef.current = openPlaylist;
   useEffect(() => {
     if (!playlistId) return;
-    const subscription = BackHandler.addEventListener('hardwareBackPress', () => { openPlaylist(null); return true; });
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => { openPlaylistRef.current(null); return true; });
     return () => subscription.remove();
   }, [playlistId]);
   function showTab(next: typeof tab) { setTab(next); openPlaylist(null); }
   // restart: replay from the beginning even if this track is already the current one.
   function choose(track: Track, ids: string[], source: string | null, restart = false) {
-    setQueue(ids); setQueueSource(source); setActive(track.id);
+    setQueue(ids); setQueueSource(source); setResumePlaylist(source); setActive(track.id);
     if (restart) setRestartToken(n => n + 1);
   }
   // Playlist play/pause icon: pauses or resumes this playlist's playback, otherwise starts it from the first song.
   function playPlaylist() {
     if (!playlist || !listed.length) return;
-    const owns = queueSource === playlist.id && !!active && playlist.trackIds.includes(active);
-    if (owns && (playing || player.current?.canResume())) player.current?.toggle();
+    if (playlistPlaying) { player.current?.toggle(); setResumePlaylist(playlist.id); }
+    else if (playlistOwnsPlayback && resumePlaylist === playlist.id && player.current?.canResume()) player.current.toggle();
     else choose(listed[0], playlist.trackIds, playlist.id, true);
   }
   function deleteSong(track: Track) {
@@ -98,7 +107,9 @@ function Main() {
   const listed = playlist ? playlist.trackIds.map(id => data.tracks.find(t => t.id === id)).filter((t): t is Track => !!t) : sortedTracks;
   const visible = listed.filter(t => t.name.toLowerCase().includes(search.toLowerCase()));
   const selected = data.tracks.find(t => t.id === active) ?? null;
-  const playlistPlaying = !!playlist && playing && queueSource === playlist.id;
+  // True when the current song came from the open playlist.
+  const playlistOwnsPlayback = !!playlist && queueSource === playlist.id && !!active && playlist.trackIds.includes(active);
+  const playlistPlaying = playlistOwnsPlayback && playing;
   const emptyText = search ? '找不到符合的歌曲。'
     : playlist ? (editMode ? '清單還沒有歌曲，點選「加入／移除歌曲」。' : '清單還沒有歌曲，點選「編輯」加入歌曲。')
     : '點選「匯入 MP3」從裝置選擇音樂檔案，或先加入範例歌曲試聽。';
@@ -138,7 +149,9 @@ function Main() {
           {playlist ? <>
             <View style={s.actionRow}>
               <Button title={editMode ? '完成' : '編輯'} filled compact onPress={() => { setEditMode(!editMode); setName(''); }} />
-              {!editMode && <View style={s.trailingIcon}>
+              {!editMode && <View style={[s.trailingIcon, s.iconRow]}>
+                {/* Restarts the whole playlist from its first song, whatever is currently playing. */}
+                <IconButton icon="refresh" label="從第一首重新播放" size={28} disabled={!listed.length} onPress={() => choose(listed[0], playlist.trackIds, playlist.id, true)} />
                 {/* The circle glyph is 0.81em tall, so size 47 matches the 38pt edit button. */}
                 <IconButton icon={playlistPlaying ? 'pause-circle' : 'play-circle'} label={playlistPlaying ? '暫停播放清單' : '播放清單'} size={47} disabled={!listed.length} onPress={playPlaylist} />
               </View>}

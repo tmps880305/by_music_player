@@ -31,6 +31,7 @@ export const s = StyleSheet.create({
   actionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginVertical: 6 },
   // Lines a trailing icon's glyph up with the content's right edge despite its 44pt tap target.
   trailingIcon: { marginRight: -4 },
+  iconRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   compactButton: { minHeight: 38, paddingHorizontal: 16, borderRadius: 9 },
   inputRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   iconButton: { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
