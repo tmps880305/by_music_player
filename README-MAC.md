@@ -1,5 +1,13 @@
 # 在 Mac 使用一般 Apple 帳號安裝到 iPhone
 
+交接包不放入 git，需要時在專案根目錄由已 commit 的版本產生：
+
+```sh
+git archive --format=zip -o handoff/baiyen_music_player_ios_mac_$(date +%F).zip HEAD app README-MAC.md
+```
+
+也可以直接 clone 此 repo，從第 2 步開始。
+
 這是 2026-09-25 從目前專案複製的原始碼交接包，並非已簽署 IPA。包含 MP3 匯入、音樂庫、播放清單、名稱排序、觸控進度條及背景音訊設定。未在 Mac 編譯或完成 iPhone 實機驗證。
 
 ## 1. 準備 Mac
