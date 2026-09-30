@@ -120,7 +120,6 @@ function Main() {
     <SafeAreaView style={s.screen} edges={['top', 'left', 'right']}>
       <StatusBar style={statusBarStyle} />
       <View style={s.header}>
-        <Text style={s.label}>BAIYEN MUSIC PLAYER</Text>
         {playlist ? (
           <View style={s.titleRow}>
             <View style={s.backIcon}><IconButton icon="chevron-back" label="返回播放清單" size={30} onPress={() => openPlaylist(null)} /></View>
