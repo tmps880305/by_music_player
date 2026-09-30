@@ -34,6 +34,14 @@ function Main() {
   const library = useLibrary();
   const { data, loaded, busy, error, notice } = library;
   const [tab, setTab] = useState<'library' | 'playlists'>('library');
+  // Starting tab, decided once per launch when the library has loaded: playlists if there is any music, otherwise the
+  // library (where the import hints are). Set during render so the first loaded frame is already on the right tab,
+  // without the tab-switch slide animations.
+  const [startTabChosen, setStartTabChosen] = useState(false);
+  if (loaded && !startTabChosen) {
+    setStartTabChosen(true);
+    if (data.tracks.length) setTab('playlists');
+  }
   const [search, setSearch] = useState('');
   const [playlistId, setPlaylistId] = useState<string | null>(null);
   // picking shows the add/remove songs sheet; renamingId is the playlist whose rename dialog is open.
@@ -158,10 +166,11 @@ function Main() {
             </Text>
           </View>
         ) : <>
-          <SlidingHeading text={tab === 'playlists' ? '播放清單' : '音樂庫'} direction={tab === 'playlists' ? 1 : -1} />
+          {/* Re-mounted once the starting tab is chosen, so that choice doesn't play the slide. */}
+          <SlidingHeading key={startTabChosen ? 'ready' : 'loading'} text={tab === 'playlists' ? '播放清單' : '音樂庫'} direction={tab === 'playlists' ? 1 : -1} />
           <View style={s.row}>
-            <Button title={`音樂庫 · ${data.tracks.length}`} label={`音樂庫，${data.tracks.length} 首歌`} selected={tab === 'library'} onPress={() => showTab('library')} />
-            <Button title={`播放清單 · ${data.playlists.length}`} label={`播放清單，${data.playlists.length} 個清單`} selected={tab === 'playlists'} onPress={() => showTab('playlists')} />
+            <Button title={`音樂庫 · ${data.tracks.length}`} label={`音樂庫，${data.tracks.length} 首歌`} selected={startTabChosen && tab === 'library'} onPress={() => showTab('library')} />
+            <Button title={`播放清單 · ${data.playlists.length}`} label={`播放清單，${data.playlists.length} 個清單`} selected={startTabChosen && tab === 'playlists'} onPress={() => showTab('playlists')} />
           </View>
         </>}
         {!!error && <Text accessibilityRole="alert" style={s.error}>{error}</Text>}
