@@ -51,7 +51,8 @@
         {
           "backgroundColor": "#E5E8E2"
         }
-      ]
+      ],
+      "./plugins/withIphoneOnly"
     ]
   }
 }
