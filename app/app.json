@@ -9,6 +9,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.wangeds.baiyenmusicplayer",
+      "appleTeamId": "ZF8GDLG99R",
       "config": {
         "usesNonExemptEncryption": false
       },
