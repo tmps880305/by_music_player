@@ -62,6 +62,10 @@ export const s = StyleSheet.create({
   //   the box starts 90.5pt left of centre; the text is centred below it.
   coachArrowToCreate: { position: 'absolute', top: 0, left: '50%', marginLeft: -90.5 },
   coachTextToCreate: { top: 78, left: 0, right: 0, textAlign: 'center' },
+  // - Drag hint (playlist with 2+ songs): loopUpArrow centred horizontally (tip x 90.5 of 110, so the box starts 90.5pt
+  //   left of centre), tip at the second card's vertical middle; TrackList sets `top`. The text is centred below.
+  coachArrowToDrag: { position: 'absolute', left: '50%', marginLeft: -90.5 },
+  coachTextToDrag: { left: 0, right: 0, textAlign: 'center' },
   coachArrowToAction: { position: 'absolute', top: 56, left: 12 },
   coachTextToAction: { top: 150, left: 49 },
   // Playlist opening transition (see PlaylistTransition): a layer over the screen that ignores touches.

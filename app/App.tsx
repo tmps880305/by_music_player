@@ -8,6 +8,7 @@ import { Alert } from './src/dialogs';
 import { toggleTrack, type Track } from './src/model';
 import { colors, s } from './src/theme';
 import { useLibrary } from './src/useLibrary';
+import { loadPrefs, savePrefs } from './src/prefs';
 import Button from './src/components/Button';
 import FadingNotice from './src/components/FadingNotice';
 import IconButton from './src/components/IconButton';
@@ -77,6 +78,15 @@ function Main() {
   const [revealed, setRevealed] = useState(false);
   // Going back from a playlist turns a still copy of its page away over the overview (see PageFlip).
   const [leaving, setLeaving] = useState<PlaylistSnapshot | null>(null);
+  // Until the user has dragged a song once, playlists with 2+ songs show a "長按拖曳排序" hint. Starts as seen so the
+  // hint doesn't flash before the saved preference loads.
+  const [dragHintSeen, setDragHintSeen] = useState(true);
+  useEffect(() => { void loadPrefs().then(p => setDragHintSeen(!!p.dragHintSeen)); }, []);
+  function reorderSongs(from: number, to: number) {
+    if (!playlist) return;
+    void library.reorderPlaylist(playlist.id, from, to);
+    if (!dragHintSeen) { setDragHintSeen(true); void loadPrefs().then(p => savePrefs({ ...p, dragHintSeen: true })); }
+  }
   const heading = useRef<Text>(null);
   const reduceMotion = useRef(false);
   useEffect(() => { AccessibilityInfo.isReduceMotionEnabled().then(v => { reduceMotion.current = v; }).catch(() => {}); }, []);
@@ -230,9 +240,9 @@ function Main() {
         </View>
         <TrackList tracks={visible} playlist={playlist} activeId={active} busy={busy} emptyText={emptyText} emptyAction={emptyAction}
           onPlay={track => choose(track, playlist ? playlist.trackIds : visible.map(t => t.id), playlist?.id ?? null)}
-          onReorder={(from, to) => { if (playlist) void library.reorderPlaylist(playlist.id, from, to); }}
+          onReorder={reorderSongs}
           onRemove={removeFromPlaylist}
-          onDelete={deleteSong} animateOnMount={revealed} />
+          onDelete={deleteSong} animateOnMount={revealed} dragHint={playlist && !dragHintSeen ? '長按拖曳排序' : undefined} />
       </>}
       </TabSlide>
       {leaving && <PageFlip onDone={() => setLeaving(null)}><PlaylistGhost {...leaving} /></PageFlip>}
