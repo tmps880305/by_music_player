@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Platform, View } from 'react-native';
+import { Animated, Easing, Platform, View, type HostInstance } from 'react-native';
 import { colors, s } from '../theme';
 
 export type Rect = { x: number; y: number; width: number; height: number };
@@ -15,7 +15,7 @@ const HEADING_SIZE = 27;
 // page's heading position, growing to heading size. It covers the screen (touches pass through) and calls onDone
 // once the title has landed. `target` is the heading's window rect, measured once the playlist page has laid out.
 export default function PlaylistTransition({ name, from, target, onDone }: { name: string; from: TransitionSource; target: Rect | null; onDone: () => void }) {
-  const layer = useRef<View>(null);
+  const layer = useRef<HostInstance>(null);
   const [origin, setOrigin] = useState<{ x: number; y: number } | null>(null);
   const progress = useRef(new Animated.Value(0)).current;
   // Safety net: if the heading can't be measured, don't leave the page hidden behind the overlay.

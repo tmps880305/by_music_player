@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, ActivityIndicator, BackHandler, Text, TextInput, View } from 'react-native';
+import { AccessibilityInfo, ActivityIndicator, BackHandler, Text, TextInput, View, type HostInstance } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -87,7 +87,7 @@ function Main() {
     void library.reorderPlaylist(playlist.id, from, to);
     if (!dragHintSeen) { setDragHintSeen(true); void loadPrefs().then(p => savePrefs({ ...p, dragHintSeen: true })); }
   }
-  const heading = useRef<Text>(null);
+  const heading = useRef<HostInstance>(null);
   const reduceMotion = useRef(false);
   useEffect(() => { AccessibilityInfo.isReduceMotionEnabled().then(v => { reduceMotion.current = v; }).catch(() => {}); }, []);
 

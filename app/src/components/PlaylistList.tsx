@@ -1,5 +1,5 @@
 import { useRef, type ReactElement, type RefObject } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, Text, TextInput, View, type HostInstance } from 'react-native';
 import ReorderableList from 'react-native-reorderable-list';
 import type { Playlist } from '../model';
 import { colors, s } from '../theme';
@@ -24,7 +24,7 @@ type Props = {
 
 type CardProps = { playlist: Playlist; busy: boolean; onOpen: (from?: TransitionSource) => void; onRename: () => void; onDelete: () => void };
 
-const measure = (ref: RefObject<View | Text | null>) => new Promise<Rect | null>(resolve => {
+const measure = (ref: RefObject<HostInstance | null>) => new Promise<Rect | null>(resolve => {
   if (!ref.current) resolve(null);
   else ref.current.measureInWindow((x, y, width, height) => resolve({ x, y, width, height }));
 });
@@ -32,7 +32,7 @@ const measure = (ref: RefObject<View | Text | null>) => new Promise<Rect | null>
 // Long-press a card to drag it to a new position.
 function PlaylistCard({ playlist, busy, onOpen, onRename, onDelete }: CardProps) {
   const drag = useLongPressDrag(!busy);
-  const title = useRef<Text>(null);
+  const title = useRef<HostInstance>(null);
   const open = async () => {
     const [card, text] = await Promise.all([measure(drag.ref), measure(title)]);
     onOpen(card && text ? { card, title: text } : undefined);

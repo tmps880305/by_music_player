@@ -10,6 +10,7 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.wangeds.baiyenmusicplayer",
       "appleTeamId": "ZF8GDLG99R",
+      "buildNumber": "4",
       "config": {
         "usesNonExemptEncryption": false
       },
