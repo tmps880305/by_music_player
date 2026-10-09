@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Baiyen Music Player",
+    "name": "ByPlayer",
     "slug": "baiyen-music-player",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,7 +10,7 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.wangeds.baiyenmusicplayer",
       "appleTeamId": "ZF8GDLG99R",
-      "buildNumber": "4",
+      "buildNumber": "5",
       "config": {
         "usesNonExemptEncryption": false
       },
