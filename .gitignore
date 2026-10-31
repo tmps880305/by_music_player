@@ -5,4 +5,5 @@ resources/
 app/assets/audio/*.mp3
 .idea/
 handoff/*.zip
+handoff/*.aab
 .DS_Store
