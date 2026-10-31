@@ -33,15 +33,15 @@
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.VIBRATE"
+      ],
+      "permissions": [
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
       ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "eff2c601-68d9-4efe-9bb7-daaec1aa25ff"
-      }
     },
     "plugins": [
       [
@@ -63,6 +63,12 @@
       "./plugins/withIphoneOnly",
       "./plugins/withQuietPods",
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "66f367ac-aff2-497a-ad48-6434a0746f57"
+      }
+    },
+    "owner": "tmps880305"
   }
 }
